@@ -24,6 +24,7 @@ const analyticsId = config.analyticsId;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     {config.favicon?.url && <link rel="icon" href={config.favicon.url} />}
+    {config.appleTouchIcon?.url && <link rel="apple-touch-icon" href={config.appleTouchIcon.url} />}
     <meta name="generator" content={Astro.generator} />
     <title>{pageTitle}</title>
     <meta name="description" content={pageDescription} />

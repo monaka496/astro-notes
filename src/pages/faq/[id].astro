@@ -4,6 +4,7 @@ import BlogPost from "@components/BlogPost.astro";
 import Breadcrumb from "@components/Breadcrumb.astro";
 import RelatedFaqs from "@components/RelatedFaqs.astro";
 import SocialShare from "@components/SocialShare.astro";
+import FaqSearch from "@components/FaqSearch.astro";
 import { getFaqDetail, getAllFaqs } from "@libs/microcms";
 import HelpfulButton from "@components/HelpfulButton.astro";
 
@@ -74,6 +75,9 @@ const structuredData = {
     <HelpfulButton faqId={faq.id} />
     <SocialShare title={titleText} url={faqUrl} />
     <RelatedFaqs current={faq} faqs={allFaqs} />
+    <section class="mt-10 rounded-2xl bg-slate-50 p-5 ring-1 ring-slate-200 sm:p-7" aria-label="FAQを再検索">
+      <FaqSearch title="他のキーワードで検索する" description="お探しの疑問が見つからない場合は、キーワードを変えて検索をお試しください。" />
+    </section>
   </main>
 </Layout>
 <script define:vars={{ faqId: faq.id }}>

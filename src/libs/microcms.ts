@@ -148,6 +148,7 @@ export type SiteConfig = {
   description: string;
   defaultOgpImage?: { url: string; width?: number; height?: number } | null;
   favicon?: { url: string } | null;
+  appleTouchIcon?: { url: string; height: number; width: number } | null;
   logo?: { url: string; width?: number; height?: number } | null;
   snsLinks?: Array<{
     "x-twitter"?: string;
