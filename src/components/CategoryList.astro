@@ -20,7 +20,7 @@ const { categories = [] } = Astro.props;
         categories.map((category) => (
           <li>
             <a
-              href={`/category/${category.id}`}
+              href={`/category/${category.id}/`}
               class="group flex min-h-16 items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md"
             >
               <span>{category.name}</span>

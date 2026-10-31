@@ -6,7 +6,8 @@ import { loadEnv } from "vite";
 const env = loadEnv(process.env.NODE_ENV || "development", process.cwd(), "");
 
 export default defineConfig({
-  site: env.SITE_URL || process.env.SITE_URL || "http://localhost:4321",
+  site: env.SITE_URL || process.env.SITE_URL || "https://faq.monaka496.com",
+  trailingSlash: "always",
   integrations: [
     sitemap({
       filter: (page) => {

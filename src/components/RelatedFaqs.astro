@@ -18,7 +18,7 @@ const related = faqs
     <ul class="mt-4 grid gap-3 sm:grid-cols-2">
       {related.map((faq) => (
         <li class="rounded-xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md">
-          <a href={`/faq/${encodeURIComponent(faq.id)}`} class="group block h-full rounded-xl p-4 text-inherit no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+          <a href={`/faq/${encodeURIComponent(faq.id)}/`} class="group block h-full rounded-xl p-4 text-inherit no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
             <span class="font-semibold text-blue-800 group-hover:underline">{faq.question || faq.title || "無題の質問"}</span>
             {faq.description && <span class="mt-1 block text-sm leading-6 text-slate-600">{faq.description}</span>}
           </a>

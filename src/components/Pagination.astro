@@ -24,9 +24,9 @@ const getPageUrl = (page: number) => {
 
   if (category) {
     path =
-      page === 1 ? `/category/${category}` : `/category/${category}/p/${page}`;
+      page === 1 ? `/category/${category}/` : `/category/${category}/p/${page}/`;
   } else {
-    path = page === 1 ? "/" : `${basePath}/p/${page}`;
+    path = page === 1 ? "/" : `${basePath}/p/${page}/`;
   }
 
   return q ? `${path}?${new URLSearchParams({ q }).toString()}` : path;

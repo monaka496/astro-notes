@@ -24,7 +24,7 @@ export const GET: APIRoute = async ({ site }) => {
       return {
         title,
         description: (faq.description || plainText).slice(0, 300),
-        link: `/faq/${encodeURIComponent(faq.id)}`,
+        link: `/faq/${encodeURIComponent(faq.id)}/`,
         pubDate: Number.isNaN(publishedDate.getTime()) ? undefined : publishedDate,
         content: body || plainText,
       };
