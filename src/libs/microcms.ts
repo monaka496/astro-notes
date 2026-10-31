@@ -1,8 +1,23 @@
 import { createClient, type MicroCMSQueries } from "microcms-js-sdk";
 
+// Cloudflare Pagesやビルド環境向けに process.env / フォールバック値を参照
+const serviceDomain =
+  import.meta.env.MICROCMS_SERVICE_DOMAIN ||
+  (typeof process !== "undefined" ? process.env.MICROCMS_SERVICE_DOMAIN : "") ||
+  "";
+
+const apiKey =
+  import.meta.env.MICROCMS_API_KEY ||
+  (typeof process !== "undefined" ? process.env.MICROCMS_API_KEY : "") ||
+  "";
+
+if (!serviceDomain || !apiKey) {
+  console.warn("MICROCMS_SERVICE_DOMAIN or MICROCMS_API_KEY is missing.");
+}
+
 export const client = createClient({
-  serviceDomain: import.meta.env.MICROCMS_SERVICE_DOMAIN,
-  apiKey: import.meta.env.MICROCMS_API_KEY,
+  serviceDomain,
+  apiKey,
 });
 
 export type Category = {
