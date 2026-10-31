@@ -8,12 +8,12 @@ const { title, url } = Astro.props;
 const shareText = `${title} ${url}`;
 const mastodonFallback = `https://mastodon.social/share?text=${encodeURIComponent(shareText)}`;
 const shareLinks = [
-  { name: "X", href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`, icon: "/icons/social/x.svg", color: "bg-black hover:bg-slate-800" },
-  { name: "Mastodon", href: mastodonFallback, icon: "/icons/social/mastodon.svg", color: "bg-[#6364ff] hover:bg-[#4f50e8]", mastodon: true },
-  { name: "Bluesky", href: `https://bsky.app/intent/compose?text=${encodeURIComponent(shareText)}`, icon: "/icons/social/bluesky.svg", color: "bg-[#0085ff] hover:bg-[#006ed6]" },
-  { name: "Facebook", href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, icon: "/icons/social/facebook.svg", color: "bg-[#1877f2] hover:bg-[#1264ce]" },
-  { name: "はてなブックマーク", href: `https://b.hatena.ne.jp/entry/panel/?url=${encodeURIComponent(url)}`, icon: "/icons/social/hatena.svg", color: "bg-[#00a4de] hover:bg-[#0089bd]" },
-  { name: "noteで書く", href: `https://note.com/intent/post?url=${encodeURIComponent(url)}`, icon: "/icons/social/note.svg", color: "bg-[#41c9b4] hover:bg-[#2bb29e]" },
+  { name: "X", href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`, icon: "/icons/share/icon_x.svg", color: "bg-black hover:bg-slate-800" },
+  { name: "Mastodon", href: mastodonFallback, icon: "/icons/share/icon_mastodon.svg", color: "bg-[#6364ff] hover:bg-[#4f50e8]", mastodon: true },
+  { name: "Bluesky", href: `https://bsky.app/intent/compose?text=${encodeURIComponent(shareText)}`, icon: "/icons/share/icon_bluesky.svg", color: "bg-[#0085ff] hover:bg-[#006ed6]" },
+  { name: "Facebook", href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, icon: "/icons/share/icon_facebook.svg", color: "bg-[#1877f2] hover:bg-[#1264ce]" },
+  { name: "はてなブックマーク", href: `https://b.hatena.ne.jp/entry/panel/?url=${encodeURIComponent(url)}`, icon: "/icons/share/icon_hatena.svg", color: "bg-[#00a4de] hover:bg-[#0089bd]" },
+  { name: "noteで書く", href: `https://note.com/intent/post?url=${encodeURIComponent(url)}`, icon: "/icons/share/icon_note.svg", color: "bg-[#41c9b4] hover:bg-[#2bb29e]" },
 ];
 ---
 
@@ -32,7 +32,7 @@ const shareLinks = [
           data-share-url={item.mastodon ? url : undefined}
           class={`inline-flex size-11 items-center justify-center rounded-lg transition-transform hover:-translate-y-0.5 hover:scale-[1.03] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700 ${item.color}`}
         >
-          <img src={item.icon} alt="" width="22" height="22" />
+          <img src={item.icon} alt="" width="20" height="20" class="size-5 object-contain" />
           <span class="sr-only">{item.name}</span>
         </a>
       </li>

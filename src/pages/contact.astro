@@ -1,10 +1,12 @@
 ---
 import Layout from "@layouts/Layout.astro";
+import { getSiteConfig } from "@libs/microcms";
 
-const contactFormUrl = import.meta.env.PUBLIC_CONTACT_FORM_URL;
+const config = await getSiteConfig();
+const formAction = config.SSGFormUrl || "https://ssgform.com/s/vuKUw0qp9B4w";
 ---
 
-<Layout title="お問い合わせ" description="お問い合わせフォームです。">
+<Layout title="お問い合わせ" description="スマホのFAQへのお問い合わせフォームです。">
   <div class="mx-auto w-full max-w-3xl">
     <header class="mb-8">
       <p class="text-sm font-semibold tracking-wide text-blue-800">CONTACT</p>
@@ -12,18 +14,14 @@ const contactFormUrl = import.meta.env.PUBLIC_CONTACT_FORM_URL;
       <p class="mt-3 leading-7 text-slate-600">ご質問やサイトに関するお問い合わせはこちらからお送りください。</p>
     </header>
 
-  <form
-      action={contactFormUrl}
-      method="POST"
-      class="space-y-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8"
-    >
+    <form action={formAction} method="POST" class="space-y-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8">
       <div>
         <label for="contact-name" class="mb-2 block text-sm font-semibold text-slate-800">
           お名前 <span class="text-rose-600">必須</span>
         </label>
         <input
           id="contact-name"
-          name="name"
+          name="お名前"
           type="text"
           autocomplete="name"
           required
@@ -37,7 +35,7 @@ const contactFormUrl = import.meta.env.PUBLIC_CONTACT_FORM_URL;
         </label>
         <input
           id="contact-email"
-          name="email"
+          name="メールアドレス"
           type="email"
           autocomplete="email"
           required
@@ -49,7 +47,7 @@ const contactFormUrl = import.meta.env.PUBLIC_CONTACT_FORM_URL;
         <label for="contact-category" class="mb-2 block text-sm font-semibold text-slate-800">お問い合わせ種別</label>
         <select
           id="contact-category"
-          name="category"
+          name="お問い合わせ種別"
           class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-200"
         >
           <option value="">選択してください</option>
@@ -66,24 +64,17 @@ const contactFormUrl = import.meta.env.PUBLIC_CONTACT_FORM_URL;
         </label>
         <textarea
           id="contact-message"
-          name="message"
+          name="お問い合わせ内容"
           rows="8"
           required
           class="w-full resize-y rounded-xl border border-slate-300 bg-white px-4 py-3 leading-7 text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-200"
         ></textarea>
       </div>
 
-      {!contactFormUrl && (
-        <p role="status" class="rounded-lg bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
-          フォームの送信先が未設定です。環境変数 <code>PUBLIC_CONTACT_FORM_URL</code> を設定してください。
-        </p>
-      )}
-
       <div class="pt-1 text-center">
         <button
           type="submit"
-          disabled={!contactFormUrl}
-          class="inline-flex min-w-44 items-center justify-center rounded-xl bg-blue-800 px-6 py-3 font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-900 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-sm"
+          class="inline-flex min-w-44 items-center justify-center rounded-xl bg-blue-800 px-6 py-3 font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-900 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
         >
           送信する
         </button>

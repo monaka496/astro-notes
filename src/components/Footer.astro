@@ -1,22 +1,52 @@
 ---
 // src/components/Footer.astro
-const { title, xAccount } = Astro.props;
-const xUrl = xAccount
-  ? (String(xAccount).startsWith("http") ? String(xAccount) : `https://x.com/${String(xAccount).replace(/^@/, "")}`)
-  : undefined;
+import type { SiteConfig } from "@libs/microcms";
+
+const { config } = Astro.props as { config: SiteConfig };
+const socials = (config.snsLinks ?? [])
+  .flatMap((links) => [
+    { label: "X", href: links["x-twitter"], icon: "/icons/share/icon_x.svg" },
+    { label: "Mastodon", href: links.mastodon, icon: "/icons/share/icon_mastodon.svg" },
+    { label: "Bluesky", href: links.bluesky, icon: "/icons/share/icon_bluesky.svg" },
+  ])
+  .filter((item): item is { label: string; href: string; icon: string } => Boolean(item.href));
+const copyright = config.copyright || `© ${new Date().getFullYear()} ${config.title}`;
 ---
 
 <footer class="border-t border-slate-200 bg-white">
-  <div class="container mx-auto flex max-w-5xl items-center justify-between px-4 py-8 sm:px-6">
-    <p class="text-sm text-muted-foreground">
-      &copy; {new Date().getFullYear()}
-      {title}
-    </p>
-    <nav aria-label="フッターナビゲーション" class="flex flex-wrap items-center justify-end gap-x-4 gap-y-2">
-      <a href="/contact/" class="text-sm font-medium text-slate-600 hover:text-blue-800 hover:underline">お問い合わせ</a>
-      <a href="/privacy/" class="text-sm font-medium text-slate-600 hover:text-blue-800 hover:underline">プライバシーポリシー</a>
-      {xUrl && <a href={xUrl} target="_blank" rel="noopener noreferrer" class="text-sm font-medium text-slate-600 hover:text-blue-800 hover:underline">X</a>}
-      <a href="/rss.xml" class="text-sm font-medium text-slate-600 hover:text-blue-800 hover:underline">RSS</a>
-    </nav>
+  <div class="container mx-auto max-w-5xl px-4 py-8 sm:px-6">
+    <div class="flex flex-col gap-5 sm:w-full sm:flex-row sm:items-center sm:justify-between">
+      <div class="space-y-2">
+        <p class="text-sm font-semibold text-slate-800">{config.title}</p>
+        <p class="text-xs text-slate-500">{copyright}</p>
+      </div>
+      <div class="flex flex-col gap-4 sm:items-end">
+        {socials.length > 0 && (
+          <nav aria-label="SNS" class="flex items-center gap-2">
+            {socials.map((social) => (
+              <a href={social.href} target="_blank" rel="noopener noreferrer" aria-label={social.label} title={social.label} class="inline-flex size-10 items-center justify-center rounded-full border border-slate-200 bg-white text-black transition hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-800">
+                <span aria-hidden="true" class="footer-sns-icon" style={`--sns-icon: url('${social.icon}')`}></span>
+              </a>
+            ))}
+          </nav>
+        )}
+        <nav aria-label="フッターナビゲーション" class="flex flex-wrap items-center gap-x-5 gap-y-3">
+          <a href="/contact/" class="text-sm font-medium text-slate-600 hover:text-blue-800 hover:underline">お問い合わせ</a>
+          <a href="/privacy/" class="text-sm font-medium text-slate-600 hover:text-blue-800 hover:underline">プライバシーポリシー</a>
+          <a href="/rss.xml" class="text-sm font-medium text-slate-600 hover:text-blue-800 hover:underline">RSS</a>
+        </nav>
+      </div>
+    </div>
   </div>
 </footer>
+
+<style>
+  .footer-sns-icon {
+    display: block;
+    width: 20px;
+    height: 20px;
+    background-color: currentColor;
+    -webkit-mask: var(--sns-icon) center / contain no-repeat;
+    mask: var(--sns-icon) center / contain no-repeat;
+  }
+</style>

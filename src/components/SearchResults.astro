@@ -5,7 +5,7 @@ const searchData = faqs.map((faq) => ({
   id: faq.id,
   question: faq.question || faq.title || "無題の質問",
   description: faq.description || "",
-  answer: (faq.content || faq.answer || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim(),
+  answer: faq.answer || "",
   categories: faq.category?.map((category) => category.name) || [],
   tags: faq.tags || [],
 }));
@@ -16,7 +16,7 @@ const searchData = faqs.map((faq) => ({
   <form action="/search/" method="get" class="mt-5 flex gap-2 rounded-2xl bg-slate-100 p-2 sm:p-3">
     <label class="min-w-0 flex-1">
       <span class="sr-only">キーワード</span>
-      <input id="search-query" name="q" type="search" placeholder="質問、回答、カテゴリ、タグを検索" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3.5 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300" />
+      <input id="search-query" name="q" type="search" placeholder="検索キーワードを入力" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3.5 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300" />
     </label>
     <button type="submit" class="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-blue-800 px-4 py-3 font-semibold text-white transition hover:bg-blue-900 sm:px-5">
       <svg aria-hidden="true" viewBox="0 0 24 24" class="size-5 fill-none stroke-current" stroke-width="2" stroke-linecap="round"><circle cx="10.8" cy="10.8" r="6.8" /><path d="m16 16 5 5" /></svg>
@@ -77,7 +77,7 @@ const searchData = faqs.map((faq) => ({
       questionText.textContent = item.question;
       title.append(questionBadge, questionText);
       link.append(title);
-      const excerpt = item.description || item.answer;
+      const excerpt = item.answer;
       if (excerpt) {
         const p = document.createElement("p");
         p.className = "mt-3 flex items-start gap-3 text-sm leading-6 text-slate-600";
@@ -85,7 +85,7 @@ const searchData = faqs.map((faq) => ({
         const answerText = document.createElement("span");
         answerBadge.className = "inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-800";
         answerBadge.textContent = "A.";
-        answerText.textContent = excerpt.length > 180 ? `${excerpt.slice(0, 180)}…` : excerpt;
+        answerText.textContent = excerpt;
         p.append(answerBadge, answerText);
         link.append(p);
       }

@@ -2,21 +2,20 @@
 // src/layouts/Layout.astro
 import Header from "@components/Header.astro";
 import Footer from "@components/Footer.astro";
-import { getSettings } from "@libs/microcms";
+import { getSiteConfig } from "@libs/microcms";
 import "@styles/global.css";
 
-const settings = await getSettings();
-const siteTitle = settings.title;
-const siteDescription = settings.description;
-const isHome = Astro.url.pathname === "/";
+const config = await getSiteConfig();
+const siteTitle = config.title;
+const siteDescription = config.description;
 const { Meta = {}, title, description, image, ogType = "website", structuredData, robots = "index,follow,max-image-preview:large" } = Astro.props;
 
 const resolvedTitle = title || Meta.title;
 const pageTitle = resolvedTitle && resolvedTitle !== siteTitle ? `${resolvedTitle} | ${siteTitle}` : siteTitle;
 const pageDescription = description || Meta.description || siteDescription;
-const canonicalUrl = new URL(Astro.url.pathname, settings.siteUrl || "https://mobile.monaka496.com");
-const ogImage = image || Meta.image || settings.ogimage?.url;
-const analyticsId = settings["analytics-id"];
+const canonicalUrl = new URL(Astro.url.pathname, config.siteUrl || "https://faq.monaka496.com/");
+const ogImage = image || Meta.image || config.defaultOgpImage?.url;
+const analyticsId = config.analyticsId;
 ---
 
 <!doctype html>
@@ -24,7 +23,7 @@ const analyticsId = settings["analytics-id"];
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-    {settings.favicon?.url && <link rel="icon" href={settings.favicon.url} />}
+    {config.favicon?.url && <link rel="icon" href={config.favicon.url} />}
     <meta name="generator" content={Astro.generator} />
     <title>{pageTitle}</title>
     <meta name="description" content={pageDescription} />
@@ -66,10 +65,10 @@ const analyticsId = settings["analytics-id"];
     {structuredData && <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />}
   </head>
   <body>
-    <Header title={siteTitle} />
+    <Header title={siteTitle} logo={config.logo} noticeText={config.noticeText} enableNotice={config.enableNotice} />
     <main class="flex-1 container mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 md:py-12">
       <slot />
     </main>
-    <Footer title={siteTitle} xAccount={settings["x-account"]} />
+    <Footer config={config} />
   </body>
 </html>

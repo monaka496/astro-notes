@@ -1,19 +1,122 @@
 ---
 // src/components/Header.astro
-const { title } = Astro.props;
+const { title, logo, noticeText, enableNotice } = Astro.props;
 ---
 
 <header class="border-b border-slate-200 bg-white">
+  {enableNotice && noticeText && (
+    <div role="status" class="border-b border-blue-100 bg-blue-50 px-4 py-2 text-center text-sm leading-6 text-blue-900">
+      {noticeText}
+    </div>
+  )}
   <div
     class="container mx-auto flex max-w-5xl items-center justify-between px-4 py-4 sm:px-6"
   >
-    <a href="/" class="flex items-center gap-2">
-      <span class="text-lg font-bold tracking-tight text-slate-900">{title}</span>
+    <a href="/" class="flex min-w-0 items-center gap-3" aria-label={`${title} トップページ`}>
+      {logo?.url ? (
+        <img src={logo.url} alt={title} width={logo.width || 180} height={logo.height || 48} class="max-h-12 max-w-44 object-contain" />
+      ) : (
+        <span class="text-lg font-bold tracking-tight text-slate-900">{title}</span>
+      )}
     </a>
-    <nav aria-label="メインナビゲーション" class="flex items-center gap-5">
+    <nav aria-label="メインナビゲーション" class="hidden items-center gap-5 md:flex">
       <a href="/" class="text-sm font-medium text-slate-700 hover:text-blue-800 hover:underline">FAQトップ</a>
       <a href="/search/" class="text-sm font-medium text-slate-700 hover:text-blue-800 hover:underline">検索</a>
       <a href="/about/" class="text-sm font-medium text-slate-700 hover:text-blue-800 hover:underline">このサイトについて</a>
     </nav>
+    <button
+      type="button"
+      class="inline-flex size-11 items-center justify-center rounded-xl border border-slate-200 text-slate-800 transition hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700 md:hidden"
+      aria-label="メニューを開く"
+      aria-expanded="false"
+      aria-controls="mobile-menu"
+      data-menu-open
+    >
+      <svg aria-hidden="true" viewBox="0 0 24 24" class="size-6 fill-none stroke-current" stroke-width="2" stroke-linecap="round">
+        <path d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+    </button>
+  </div>
+  <div id="mobile-menu" class="fixed inset-0 z-50 hidden md:hidden" data-menu-root>
+    <button type="button" class="absolute inset-0 bg-slate-950/40 opacity-0 transition-opacity duration-300 motion-reduce:transition-none" aria-label="メニューを閉じる" data-menu-backdrop tabindex="-1"></button>
+    <section role="dialog" aria-modal="true" aria-label="サイトメニュー" class="absolute inset-y-0 right-0 flex w-80 max-w-[88vw] translate-x-full flex-col bg-white shadow-2xl transition-transform duration-300 motion-reduce:transition-none" data-menu-panel>
+      <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+        <span class="font-bold text-slate-900">メニュー</span>
+        <button type="button" class="inline-flex size-10 items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-blue-700" aria-label="メニューを閉じる" data-menu-close>
+          <svg aria-hidden="true" viewBox="0 0 24 24" class="size-6 fill-none stroke-current" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18" /></svg>
+        </button>
+      </div>
+      <nav aria-label="モバイルナビゲーション" class="flex flex-col p-4">
+        <a href="/" class="rounded-lg px-4 py-3 font-medium text-slate-800 hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-blue-700">FAQトップ</a>
+        <a href="/search/" class="rounded-lg px-4 py-3 font-medium text-slate-800 hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-blue-700">検索</a>
+        <a href="/about/" class="rounded-lg px-4 py-3 font-medium text-slate-800 hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-blue-700">このサイトについて</a>
+      </nav>
+    </section>
   </div>
 </header>
+
+<script>
+  const root = document.querySelector<HTMLElement>("[data-menu-root]");
+  const openButton = document.querySelector<HTMLButtonElement>("[data-menu-open]");
+  const closeButton = document.querySelector<HTMLButtonElement>("[data-menu-close]");
+  const panel = document.querySelector<HTMLElement>("[data-menu-panel]");
+  const backdrop = document.querySelector<HTMLButtonElement>("[data-menu-backdrop]");
+  let closeTimer: number | undefined;
+  let previousOverflow = "";
+
+  if (root && openButton && closeButton && panel && backdrop) {
+    const closeMenu = () => {
+      if (root.classList.contains("hidden")) return;
+      openButton.setAttribute("aria-expanded", "false");
+      openButton.setAttribute("aria-label", "メニューを開く");
+      panel.classList.add("translate-x-full");
+      backdrop.classList.remove("opacity-100");
+      backdrop.classList.add("opacity-0");
+      document.body.style.overflow = previousOverflow;
+      window.clearTimeout(closeTimer);
+      closeTimer = window.setTimeout(() => root.classList.add("hidden"), 300);
+      openButton.focus();
+    };
+
+    const openMenu = () => {
+      window.clearTimeout(closeTimer);
+      root.classList.remove("hidden");
+      previousOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      openButton.setAttribute("aria-expanded", "true");
+      openButton.setAttribute("aria-label", "メニューを閉じる");
+      requestAnimationFrame(() => {
+        panel.classList.remove("translate-x-full");
+        backdrop.classList.remove("opacity-0");
+        backdrop.classList.add("opacity-100");
+        closeButton.focus();
+      });
+    };
+
+    openButton.addEventListener("click", openMenu);
+    closeButton.addEventListener("click", closeMenu);
+    backdrop.addEventListener("click", closeMenu);
+    root.querySelectorAll("nav a").forEach((link) => link.addEventListener("click", closeMenu));
+    root.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeMenu();
+      }
+      if (event.key === "Tab") {
+        const focusable = Array.from(root.querySelectorAll<HTMLElement>('a[href], button:not([tabindex="-1"])'));
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last?.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first?.focus();
+        }
+      }
+    });
+    window.addEventListener("resize", () => {
+      if (window.matchMedia("(min-width: 768px)").matches && !root.classList.contains("hidden")) closeMenu();
+    });
+  }
+</script>
