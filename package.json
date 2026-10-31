@@ -12,6 +12,8 @@
     "node": ">=24.x"
   },
   "dependencies": {
+    "@astrojs/rss": "^4.0.19",
+    "@astrojs/sitemap": "^3.7.4",
     "@fontsource/noto-sans-jp": "^5.2.5",
     "@tailwindcss/typography": "^0.5.16",
     "@tailwindcss/vite": "^4.2.2",

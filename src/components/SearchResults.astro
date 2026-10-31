@@ -1,0 +1,103 @@
+---
+import type { Faq } from "@libs/microcms";
+const { faqs } = Astro.props as { faqs: Faq[] };
+const searchData = faqs.map((faq) => ({
+  id: faq.id,
+  question: faq.question || faq.title || "無題の質問",
+  description: faq.description || "",
+  answer: (faq.content || faq.answer || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim(),
+  categories: faq.category?.map((category) => category.name) || [],
+  tags: faq.tags || [],
+}));
+---
+
+<section aria-labelledby="search-results-title">
+  <h1 id="search-results-title" class="text-2xl font-bold text-slate-900">FAQ検索</h1>
+  <form action="/search" method="get" class="mt-5 flex gap-2 rounded-2xl bg-slate-100 p-2 sm:p-3">
+    <label class="min-w-0 flex-1">
+      <span class="sr-only">キーワード</span>
+      <input id="search-query" name="q" type="search" placeholder="質問、回答、カテゴリ、タグを検索" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3.5 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300" />
+    </label>
+    <button type="submit" class="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-blue-800 px-4 py-3 font-semibold text-white transition hover:bg-blue-900 sm:px-5">
+      <svg aria-hidden="true" viewBox="0 0 24 24" class="size-5 fill-none stroke-current" stroke-width="2" stroke-linecap="round"><circle cx="10.8" cy="10.8" r="6.8" /><path d="m16 16 5 5" /></svg>
+      <span>検索</span>
+    </button>
+  </form>
+  <p id="search-status" class="mt-5 text-sm text-slate-600" aria-live="polite"></p>
+  <ul id="search-results" class="mt-4 grid gap-3 sm:gap-4"></ul>
+</section>
+
+<script define:vars={{ searchData }}>
+  const queryInput = document.querySelector("#search-query");
+  const status = document.querySelector("#search-status");
+  const results = document.querySelector("#search-results");
+  const params = new URLSearchParams(location.search);
+  const query = (params.get("q") || "").trim();
+  const tagId = params.get("tag");
+  queryInput.value = query;
+
+  if (tagId) {
+    const tag = searchData.flatMap((item) => item.tags).find((item) => item.id === tagId);
+    const matches = searchData.filter((item) => item.tags.some((itemTag) => itemTag.id === tagId));
+    status.textContent = `タグ「${tag?.name || tag?.tag || ""}」のFAQ：${matches.length}件`;
+    render(matches);
+  } else if (!query) {
+    status.textContent = "キーワードを入力して検索してください。";
+  } else {
+    const words = query.toLocaleLowerCase("ja").split(/[\s　]+/).filter(Boolean);
+    const matches = searchData.filter((item) => {
+      const searchable = [item.question, item.description, item.answer, ...item.categories, ...item.tags.map((tag) => tag.name || tag.tag)].join(" ").toLocaleLowerCase("ja");
+      return words.every((word) => searchable.includes(word));
+    });
+    status.textContent = `「${query}」の検索結果：${matches.length}件`;
+    render(matches);
+  }
+
+  function render(items) {
+    if (items.length === 0) {
+      const empty = document.createElement("li");
+      empty.className = "py-6 text-sm text-slate-600";
+      empty.textContent = "該当するFAQが見つかりませんでした。キーワードを変えてお試しください。";
+      results.append(empty);
+      return;
+    }
+    items.forEach((item) => {
+      const li = document.createElement("li");
+      li.className = "rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md sm:p-5";
+      const link = document.createElement("a");
+      link.href = `/faq/${encodeURIComponent(item.id)}`;
+      link.className = "group block text-inherit no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600";
+      const title = document.createElement("span");
+      const questionBadge = document.createElement("span");
+      const questionText = document.createElement("span");
+      title.className = "flex items-start gap-3 font-bold leading-7 text-slate-900 group-hover:text-blue-800";
+      questionBadge.className = "inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-800";
+      questionBadge.textContent = "Q.";
+      questionText.className = "group-hover:underline";
+      questionText.textContent = item.question;
+      title.append(questionBadge, questionText);
+      link.append(title);
+      const excerpt = item.description || item.answer;
+      if (excerpt) {
+        const p = document.createElement("p");
+        p.className = "mt-3 flex items-start gap-3 text-sm leading-6 text-slate-600";
+        const answerBadge = document.createElement("span");
+        const answerText = document.createElement("span");
+        answerBadge.className = "inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-800";
+        answerBadge.textContent = "A.";
+        answerText.textContent = excerpt.length > 180 ? `${excerpt.slice(0, 180)}…` : excerpt;
+        p.append(answerBadge, answerText);
+        link.append(p);
+      }
+      const labels = [...item.categories, ...item.tags.map((tag) => `#${tag.name || tag.tag}`)];
+      if (labels.length) {
+        const meta = document.createElement("p");
+        meta.className = "mt-2 text-xs text-slate-500";
+        meta.textContent = labels.join(" · ");
+        link.append(meta);
+      }
+      li.append(link);
+      results.append(li);
+    });
+  }
+</script>

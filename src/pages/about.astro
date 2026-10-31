@@ -1,18 +1,122 @@
 ---
 import Layout from "@layouts/Layout.astro";
-import { getSettings } from "@libs/microcms.ts";
-export const prerender = true;
-const settings = await getSettings();
+import { getSettings } from "@libs/microcms";
 
-const Meta = {
-  title: "About",
-  ogType: "article",
-};
+const settings = await getSettings();
+const siteName = settings.title || "FAQサイト";
 ---
 
-<Layout Meta={Meta}>
-  <article class="prose max-w-none">
-    <h1 class="text-3xl font-medium mb-3 leading-normal">About</h1>
-    <div set:html={settings.about} class="entry-content" />
-  </article>
+<Layout title="About" description="FAQサイトの目的や使い方、運営者情報をご案内します。">
+  <div class="mx-auto w-full max-w-5xl space-y-12 sm:space-y-16">
+    <section class="overflow-hidden rounded-3xl bg-gradient-to-br from-blue-50 via-white to-indigo-50 px-6 py-10 ring-1 ring-slate-200 sm:px-10 sm:py-14">
+      <div class="max-w-3xl">
+        <p class="text-sm font-bold tracking-[0.16em] text-blue-800">ABOUT THIS FAQ</p>
+        <h1 class="mt-4 text-3xl font-bold leading-tight tracking-tight text-slate-900 sm:text-4xl">
+          知りたい答えに、<br class="sm:hidden" />迷わずたどり着ける場所へ。
+        </h1>
+        <p class="mt-5 text-base leading-8 text-slate-600 sm:text-lg">
+          {siteName}は、スマートフォンの端末設定や、格安SIM・キャリアの料金プラン、乗り換え・契約に関する疑問を解決するためのFAQサイトです。知りたいことを検索やカテゴリから探し、手順やポイントを確認できます。
+        </p>
+        <div class="mt-7 flex flex-wrap gap-3">
+          <a href="/search" class="inline-flex items-center justify-center rounded-xl bg-blue-800 px-5 py-3 font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-900 hover:shadow-md">
+            FAQを検索する
+          </a>
+          <a href="/" class="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-3 font-semibold text-slate-700 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-800">
+            FAQ一覧を見る
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="topics-title">
+      <div class="max-w-2xl">
+        <p class="text-sm font-bold tracking-[0.16em] text-blue-800">TOPICS</p>
+        <h2 id="topics-title" class="mt-2 text-2xl font-bold tracking-tight text-slate-900">こんな疑問を解決します</h2>
+      </div>
+      <ul class="mt-6 grid gap-4 sm:grid-cols-2">
+        <li class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+          <h3 class="font-bold text-slate-900">スマートフォンの設定</h3>
+          <p class="mt-2 text-sm leading-7 text-slate-600">通信、アプリ、通知など、端末の設定や使い方に関する質問。</p>
+        </li>
+        <li class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+          <h3 class="font-bold text-slate-900">料金プラン・通信費</h3>
+          <p class="mt-2 text-sm leading-7 text-slate-600">格安SIMや携帯キャリアのプラン、料金の確認に関する質問。</p>
+        </li>
+        <li class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+          <h3 class="font-bold text-slate-900">乗り換え・契約</h3>
+          <p class="mt-2 text-sm leading-7 text-slate-600">事業者の乗り換え、申し込み、契約手続きに関する質問。</p>
+        </li>
+        <li class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+          <h3 class="font-bold text-slate-900">トラブル・困りごと</h3>
+          <p class="mt-2 text-sm leading-7 text-slate-600">スマートフォンや通信を利用する中で困ったときの対処方法。</p>
+        </li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="features-title">
+      <div class="max-w-2xl">
+        <p class="text-sm font-bold tracking-[0.16em] text-blue-800">FEATURES</p>
+        <h2 id="features-title" class="mt-2 text-2xl font-bold tracking-tight text-slate-900">使いやすさを支える3つの工夫</h2>
+        <p class="mt-3 leading-7 text-slate-600">質問を探すときも、回答を読み進めるときも、迷いにくい構成を目指しています。</p>
+      </div>
+      <ul class="mt-6 grid gap-4 md:grid-cols-3">
+        <li class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+          <span class="inline-flex size-11 items-center justify-center rounded-xl bg-blue-100 text-blue-800">
+            <svg aria-hidden="true" viewBox="0 0 24 24" class="size-6 fill-none stroke-current" stroke-width="1.8" stroke-linecap="round"><circle cx="10.8" cy="10.8" r="6.8" /><path d="m16 16 5 5" /></svg>
+          </span>
+          <h3 class="mt-4 text-lg font-bold text-slate-900">キーワードですぐ検索</h3>
+          <p class="mt-2 text-sm leading-7 text-slate-600">質問や回答のキーワードから検索できます。カテゴリやタグも検索の手がかりになります。</p>
+        </li>
+        <li class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+          <span class="inline-flex size-11 items-center justify-center rounded-xl bg-indigo-100 text-indigo-800">
+            <svg aria-hidden="true" viewBox="0 0 24 24" class="size-6 fill-none stroke-current" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5Z" /><path d="m3 12 9 5 9-5M3 16l9 5 9-5" /></svg>
+          </span>
+          <h3 class="mt-4 text-lg font-bold text-slate-900">分類から探せる</h3>
+          <p class="mt-2 text-sm leading-7 text-slate-600">カテゴリやタグでFAQを整理しています。知りたい内容の近くから関連する質問を探せます。</p>
+        </li>
+        <li class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+          <span class="inline-flex size-11 items-center justify-center rounded-xl bg-emerald-100 text-emerald-800">
+            <svg aria-hidden="true" viewBox="0 0 24 24" class="size-6 fill-none stroke-current" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H6l-3 2v-9.5A7.5 7.5 0 0 1 10.5 4H12" /><path d="m15 7 2 2 4-4" /></svg>
+          </span>
+          <h3 class="mt-4 text-lg font-bold text-slate-900">回答を読みやすく</h3>
+          <p class="mt-2 text-sm leading-7 text-slate-600">回答と詳しい本文を分けて表示し、関連FAQやフィードバックにもすぐアクセスできます。</p>
+        </li>
+      </ul>
+    </section>
+
+    {settings.about && (
+      <section aria-labelledby="message-title" class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8">
+        <h2 id="message-title" class="text-xl font-bold text-slate-900">運営者から</h2>
+        <div set:html={settings.about} class="entry-content prose mt-4 max-w-none leading-relaxed" />
+      </section>
+    )}
+
+    <section aria-labelledby="operator-title" class="grid gap-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:grid-cols-[auto_1fr] sm:items-center sm:p-8">
+      <span class="inline-flex size-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-700">
+        <svg aria-hidden="true" viewBox="0 0 24 24" class="size-7 fill-none stroke-current" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></svg>
+      </span>
+      <div>
+        <p class="text-sm font-bold tracking-[0.16em] text-blue-800">OPERATOR</p>
+        <h2 id="operator-title" class="mt-1 text-xl font-bold text-slate-900">運営者情報</h2>
+        <dl class="mt-4 grid gap-3 text-sm sm:grid-cols-[7rem_1fr]">
+          <dt class="font-semibold text-slate-500">サイト名</dt>
+          <dd class="text-slate-800">{siteName}</dd>
+          <dt class="font-semibold text-slate-500">運営者</dt>
+          <dd class="text-slate-800">{siteName} 運営者</dd>
+          <dt class="font-semibold text-slate-500">お問い合わせ</dt>
+          <dd><a href="/contact" class="font-medium text-blue-800 underline decoration-blue-300 underline-offset-4 hover:text-blue-900">お問い合わせページ</a></dd>
+        </dl>
+      </div>
+    </section>
+
+    <section class="rounded-2xl bg-blue-900 px-6 py-8 text-white sm:flex sm:items-center sm:justify-between sm:gap-8 sm:px-8">
+      <div>
+        <h2 class="text-xl font-bold">お困りごとやご意見をお聞かせください</h2>
+        <p class="mt-2 text-sm leading-7 text-blue-100">サイトに関するお問い合わせは、フォームからお送りいただけます。</p>
+      </div>
+      <a href="/contact" class="mt-5 inline-flex shrink-0 items-center justify-center rounded-xl bg-white px-5 py-3 font-semibold text-blue-900 transition hover:-translate-y-0.5 hover:bg-blue-50 sm:mt-0">
+        お問い合わせはこちら <span aria-hidden="true" class="ml-2">→</span>
+      </a>
+    </section>
+  </div>
 </Layout>

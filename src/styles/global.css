@@ -47,6 +47,7 @@
 
 body {
   @apply font-body;
+  @apply bg-slate-50 text-slate-900 antialiased;
   text-underline-offset: 0.3em;
 }
 

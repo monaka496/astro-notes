@@ -1,5 +1,5 @@
 ---
-import { getBlogList, getCategoryList } from "@libs/microcms.ts";
+import { getFaqs, getCategories } from "@libs/microcms";
 import Layout from "@layouts/Layout.astro";
 import BlogList from "@components/BlogList.astro";
 import Pagination from "@components/Pagination.astro";
@@ -7,17 +7,17 @@ import { LIMIT } from "@constants/index.ts";
 export const prerender = true;
 
 export async function getStaticPaths() {
-  const { contents: categories } = await getCategoryList();
+  const { contents: categories } = await getCategories();
   let paths = [];
 
   for (const category of categories) {
-    const { totalCount } = await getBlogList({
+    const { totalCount } = await getFaqs({
       limit: 1,
       filters: `category[contains]${category.id}`,
     });
     const totalPages = Math.ceil(totalCount / LIMIT);
 
-    for (let i = 1; i <= totalPages; i++) {
+    for (let i = 2; i <= totalPages; i++) {
       paths.push({ params: { id: category.id, page: i.toString() } });
     }
   }
@@ -27,11 +27,11 @@ export async function getStaticPaths() {
 const { id, page } = Astro.params;
 const currentPage = Number(page) || 1;
 
-const { contents: categories } = await getCategoryList();
+const { contents: categories } = await getCategories();
 const category = categories.find((cat) => cat.id === id);
 
 const { contents: blogs, totalCount } = category
-  ? await getBlogList({
+  ? await getFaqs({
       limit: LIMIT,
       offset: (currentPage - 1) * LIMIT,
       filters: `category[contains]${category.id}`,

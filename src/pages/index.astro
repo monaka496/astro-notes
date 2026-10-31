@@ -1,33 +1,57 @@
 ---
-import { getBlogList, getCategoryList } from "@libs/microcms.ts";
+import { getFaqs, getCategories, getSettings, getAllFaqs, getTags } from "@libs/microcms";
 import Layout from "@layouts/Layout.astro";
 import BlogList from "@components/BlogList.astro";
 import Pagination from "@components/Pagination.astro";
 import CategoryList from "@components/CategoryList.astro";
-import { LIMIT } from "@constants/index.ts";
-import { getSettings } from "@libs/microcms.ts";
+import { LIMIT } from "@constants/index";
+import FaqSearch from "@components/FaqSearch.astro";
+import PopularFaqs from "@components/PopularFaqs.astro";
+import TagList from "@components/TagList.astro";
+
 export const prerender = true;
 
-const settings = await getSettings();
+// 設定情報の取得 (getSettingsの有無に合わせてフォールバック)
+let settings = { title: "FAQサイト" };
+try {
+  settings = await getSettings();
+} catch (e) {
+  // getSettingsがない場合のフォールバック
+}
 
-const { contents: blogs, totalCount } = await getBlogList({
+// FAQ一覧を取得 (旧 getBlogList)
+const { contents: blogs, totalCount } = await getFaqs({
   limit: LIMIT,
 });
 
-const { contents: categories } = await getCategoryList();
+// カテゴリ一覧を取得 (旧 getCategoryList)
+const categoriesResponse = await getCategories();
+const categories = categoriesResponse?.contents || [];
+const allFaqs = await getAllFaqs();
+const { contents: tags } = await getTags({ limit: 100 });
 
 const Meta = {
-  title: settings?.title || "Set Your Title Here",
+  title: settings?.title || "FAQ一覧",
 };
 ---
 
 <Layout Meta={Meta}>
-  <div class="space-y-8">
+  <div class="space-y-10">
+    <section class="rounded-3xl bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 px-5 py-8 shadow-sm ring-1 ring-slate-200 sm:px-8 sm:py-10">
+      <p class="text-sm font-semibold tracking-wide text-blue-800">FAQ SUPPORT</p>
+      <h1 class="mt-2 text-3xl font-bold leading-tight tracking-tight text-slate-900 md:text-4xl">よくあるご質問（FAQ）</h1>
+      <p class="mt-3 text-base leading-7 text-slate-600">知りたいことをキーワードから検索できます。</p>
+      <div class="mt-6"><FaqSearch /></div>
+    </section>
+    <TagList tags={tags} />
+    <PopularFaqs faqs={allFaqs} />
+  </div>
+  <div class="mt-12 space-y-3">
+    <h2 class="text-xl font-bold text-slate-900">FAQ一覧</h2>
     <BlogList blogs={blogs} />
     <Pagination totalCount={totalCount} />
   </div>
-
-  <div class="space-y-8">
+  <div class="mt-12">
     <CategoryList categories={categories} />
   </div>
 </Layout>

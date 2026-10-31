@@ -15,13 +15,24 @@ Node.js 24 以上
 ```
 MICROCMS_API_KEY=xxxxxxxxxx
 MICROCMS_SERVICE_DOMAIN=xxxxxxxxxx
+SITE_URL=https://your-domain.example
+PUBLIC_CONTACT_FORM_URL=https://formspree.io/f/your-form-id
 ```
 
 `MICROCMS_API_KEY`  
 microCMS 管理画面の「サービス設定 > API キー」から確認することができます。
 
-`MICROCMS_SERVICE_DOMAIN`  
+`MICROCMS_SERVICE_DOMAIN`
+
 microCMS 管理画面の URL（https://xxxxxxxx.microcms.io）の xxxxxxxx の部分です。
+
+`SITE_URL`
+
+本番サイトのURLです。OGP・RSS・sitemap・robots.txtの絶対URLに使用します。開発時は省略でき、省略時は`http://localhost:4321`を使用します。
+
+`PUBLIC_CONTACT_FORM_URL`
+
+Formspreeなどのフォームサービスで発行した送信先URLです。お問い合わせページの`action`属性に使用します。
 
 ## 開発の仕方
 

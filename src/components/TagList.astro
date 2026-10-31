@@ -1,0 +1,10 @@
+---
+import type { Tag } from "@libs/microcms";
+const { tags } = Astro.props as { tags: Tag[] };
+---
+<section aria-labelledby="tag-list-title">
+  <h2 id="tag-list-title" class="text-lg font-bold text-slate-900">タグから探す</h2>
+  {tags.length ? <ul class="mt-4 flex flex-wrap gap-2">
+    {tags.map((tag) => <li><a href={`/search?tag=${encodeURIComponent(tag.id)}`} class="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-800">#{tag.tag}</a></li>)}
+  </ul> : <p class="mt-3 text-sm text-slate-500">タグはまだありません。</p>}
+</section>

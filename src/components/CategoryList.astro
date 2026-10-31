@@ -3,33 +3,32 @@
 import type { Category } from "@libs/microcms.ts";
 
 interface Props {
-  categories: Category[];
+  categories?: Category[]; // オプショナル (?) に変更
 }
-const { categories } = Astro.props;
+
+// categories が渡されない場合は空配列 [] を初期値にする
+const { categories = [] } = Astro.props;
 ---
 
-<div>
-  <div class="rounded-lg border bg-card text-card-foreground shadow-sm">
-    <div class="flex flex-col p-6 pb-0">
-      <h3 class="text-lg font-medium">Categories</h3>
-    </div>
-    <ul class="space-y-2 p-6">
-      {
-        categories.length === 0 ? (
-          <li class="text-sm text-muted-foreground">カテゴリがありません</li>
-        ) : (
-          categories.map((category) => (
-            <li>
-              <a
-                href={`/category/${category.id}`}
-                class="text-sm hover:underline"
-              >
-                {category.name}
-              </a>
-            </li>
-          ))
-        )
-      }
-    </ul>
-  </div>
-</div>
+<section aria-labelledby="category-list-title" class="border-t border-slate-200 pt-6">
+  <h2 id="category-list-title" class="text-lg font-bold text-slate-900">カテゴリから探す</h2>
+  <ul class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+    {
+      categories.length === 0 ? (
+        <li class="text-sm text-slate-500">カテゴリがありません</li>
+      ) : (
+        categories.map((category) => (
+          <li>
+            <a
+              href={`/category/${category.id}`}
+              class="group flex min-h-16 items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md"
+            >
+              <span>{category.name}</span>
+              <span aria-hidden="true" class="text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-blue-700">›</span>
+            </a>
+          </li>
+        ))
+      )
+    }
+  </ul>
+</section>

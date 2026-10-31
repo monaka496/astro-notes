@@ -1,0 +1,63 @@
+---
+interface Props {
+  title: string;
+  url: string;
+}
+
+const { title, url } = Astro.props;
+const shareText = `${title} ${url}`;
+const mastodonFallback = `https://mastodon.social/share?text=${encodeURIComponent(shareText)}`;
+const shareLinks = [
+  { name: "X", href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`, icon: "/icons/social/x.svg", color: "bg-black hover:bg-slate-800" },
+  { name: "Mastodon", href: mastodonFallback, icon: "/icons/social/mastodon.svg", color: "bg-[#6364ff] hover:bg-[#4f50e8]", mastodon: true },
+  { name: "Bluesky", href: `https://bsky.app/intent/compose?text=${encodeURIComponent(shareText)}`, icon: "/icons/social/bluesky.svg", color: "bg-[#0085ff] hover:bg-[#006ed6]" },
+  { name: "Facebook", href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, icon: "/icons/social/facebook.svg", color: "bg-[#1877f2] hover:bg-[#1264ce]" },
+  { name: "はてなブックマーク", href: `https://b.hatena.ne.jp/entry/panel/?url=${encodeURIComponent(url)}`, icon: "/icons/social/hatena.svg", color: "bg-[#00a4de] hover:bg-[#0089bd]" },
+  { name: "noteで書く", href: `https://note.com/intent/post?url=${encodeURIComponent(url)}`, icon: "/icons/social/note.svg", color: "bg-[#41c9b4] hover:bg-[#2bb29e]" },
+];
+---
+
+<section class="mt-8 border-t border-slate-200 pt-5" aria-labelledby="share-title">
+  <h2 id="share-title" class="text-sm font-semibold text-slate-700">この記事をシェア</h2>
+  <ul class="mt-3 flex flex-wrap gap-3">
+    {shareLinks.map((item) => (
+      <li>
+        <a
+          href={item.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={`${item.name}でシェア`}
+          data-mastodon-share={item.mastodon ? "true" : undefined}
+          data-share-title={item.mastodon ? title : undefined}
+          data-share-url={item.mastodon ? url : undefined}
+          class={`inline-flex size-11 items-center justify-center rounded-lg transition-transform hover:-translate-y-0.5 hover:scale-[1.03] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700 ${item.color}`}
+        >
+          <img src={item.icon} alt="" width="22" height="22" />
+          <span class="sr-only">{item.name}</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLAnchorElement>("[data-mastodon-share]").forEach((link) => {
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      const savedInstance = localStorage.getItem("mastodon-instance") || "mastodon.social";
+      const input = window.prompt("利用するMastodonサーバーを入力してください", savedInstance);
+      if (!input) return;
+
+      try {
+        const instance = new URL(input.includes("://") ? input : `https://${input}`);
+        if (instance.protocol !== "https:") return;
+        localStorage.setItem("mastodon-instance", instance.host);
+        const shareUrl = new URL("/share", instance.origin);
+        shareUrl.searchParams.set("text", `${link.dataset.shareTitle} ${link.dataset.shareUrl}`);
+        window.open(shareUrl.href, "_blank", "noopener,noreferrer");
+      } catch {
+        window.alert("MastodonサーバーのURLを確認してください。");
+      }
+    });
+  });
+</script>

@@ -1,27 +1,28 @@
 ---
-import { getCategoryList, getBlogList } from "@libs/microcms.ts";
+import { getCategories, getFaqs, type Category } from "@libs/microcms";
 import Layout from "@layouts/Layout.astro";
 import BlogList from "@components/BlogList.astro";
 import Pagination from "@components/Pagination.astro";
 import CategoryList from "@components/CategoryList.astro";
-import { LIMIT } from "@constants/index.ts";
+import { LIMIT } from "@constants/index";
+
 export const prerender = true;
 
 export async function getStaticPaths() {
-  const { contents: categories } = await getCategoryList();
-  return categories.map((category) => ({
+  const { contents: categories } = await getCategories();
+  // category に型注釈を追加
+  return categories.map((category: Category) => ({
     params: { id: category.id },
   }));
 }
 
 const { id } = Astro.params;
-
-const { contents: categories } = await getCategoryList();
-
-const category = categories.find((cat) => cat.id === id);
+const { contents: categories } = await getCategories();
+// cat に型注釈を追加
+const category = categories.find((cat: Category) => cat.id === id);
 
 const { contents: blogs, totalCount } = category
-  ? await getBlogList({
+  ? await getFaqs({
       limit: LIMIT,
       filters: `category[contains]${category.id}`,
     })
@@ -37,7 +38,6 @@ const Meta = {
     <h1 class="text-xl font-medium mb-6">
       {category ? `${category.name} の記事一覧` : "カテゴリが見つかりません"}
     </h1>
-
     {
       category ? (
         <>
@@ -54,7 +54,6 @@ const Meta = {
       )
     }
   </div>
-
   <div class="space-y-8">
     <CategoryList categories={categories} />
   </div>

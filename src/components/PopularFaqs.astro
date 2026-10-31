@@ -1,0 +1,30 @@
+---
+import type { Faq } from "@libs/microcms";
+const { faqs } = Astro.props as { faqs: Faq[] };
+const items = faqs.map((faq) => ({ id: faq.id, title: faq.question || faq.title || "無題の質問" }));
+---
+<section aria-labelledby="popular-heading">
+  <h2 id="popular-heading" class="text-lg font-bold text-slate-900">人気のご質問</h2>
+  <ol id="popular-faq-list" class="mt-4 grid gap-3 sm:grid-cols-2"></ol>
+</section>
+<script define:vars={{ items }}>
+  const list = document.querySelector("#popular-faq-list");
+  const scores = JSON.parse(localStorage.getItem("faq-views") || "{}");
+  const ranked = [...items].sort((a, b) => (scores[b.id] || 0) - (scores[a.id] || 0)).slice(0, 5);
+  ranked.forEach((item) => {
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    const badge = document.createElement("span");
+    const title = document.createElement("span");
+    a.href = `/faq/${encodeURIComponent(item.id)}`;
+    title.textContent = item.title;
+    li.className = "rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md";
+    a.className = "flex items-start gap-3 text-sm font-semibold leading-6 text-slate-800 no-underline hover:text-blue-800";
+    badge.className = "inline-flex size-7 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-800";
+    badge.textContent = "Q.";
+    title.className = "pt-0.5 hover:underline";
+    a.append(badge, title);
+    li.append(a);
+    list.append(li);
+  });
+</script>

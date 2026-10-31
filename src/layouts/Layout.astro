@@ -2,20 +2,21 @@
 // src/layouts/Layout.astro
 import Header from "@components/Header.astro";
 import Footer from "@components/Footer.astro";
-import { getSettings } from "@libs/microcms.ts";
+import { getSettings } from "@libs/microcms";
 import "@styles/global.css";
+
 const settings = await getSettings();
 const siteTitle = settings.title;
 const siteDescription = settings.description;
-const url = new URL(Astro.url.pathname, Astro.site);
 const isHome = Astro.url.pathname === "/";
-const { Meta } = Astro.props;
-const pageTitle = isHome ? siteTitle : `${Meta.title} | ${siteTitle}`;
-const pageDescription = Meta.description ? Meta.description : siteDescription;
-const ogImage = Meta.image
-  ? Meta.image
-  : new URL("/assets/images/og.png", Astro.site);
-const ogType = Meta.ogType ? Meta.ogType : "blog";
+const { Meta = {}, title, description, image, ogType = "website", structuredData, robots = "index,follow,max-image-preview:large" } = Astro.props;
+
+const resolvedTitle = title || Meta.title;
+const pageTitle = resolvedTitle && resolvedTitle !== siteTitle ? `${resolvedTitle} | ${siteTitle}` : siteTitle;
+const pageDescription = description || Meta.description || siteDescription;
+const canonicalUrl = new URL(Astro.url.pathname, settings.siteUrl || "https://mobile.monaka496.com");
+const ogImage = image || Meta.image || settings.ogimage?.url;
+const analyticsId = settings["analytics-id"];
 ---
 
 <!doctype html>
@@ -23,10 +24,11 @@ const ogType = Meta.ogType ? Meta.ogType : "blog";
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    {settings.favicon?.url && <link rel="icon" href={settings.favicon.url} />}
     <meta name="generator" content={Astro.generator} />
     <title>{pageTitle}</title>
     <meta name="description" content={pageDescription} />
+    <meta name="robots" content={robots} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -36,21 +38,38 @@ const ogType = Meta.ogType ? Meta.ogType : "blog";
     <!-- OG settings -->
     <meta property="og:site_name" content={siteTitle} />
     <meta property="og:title" content={pageTitle} />
-    <meta property="og:image" content={ogImage} />
+    {ogImage && <meta property="og:image" content={typeof ogImage === "string" ? ogImage : ogImage.toString()} />}
+    {ogImage && <meta property="og:image:alt" content={pageTitle} />}
     <meta property="og:description" content={pageDescription} />
-    <meta property="og:url" content={url} />
+    <meta property="og:url" content={canonicalUrl.toString()} />
     <meta property="og:type" content={ogType} />
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:image" content={ogImage} />
-    <link rel="canonical" href={url} />
+    <meta property="og:locale" content="ja_JP" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content={canonicalUrl.toString()} />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={pageDescription} />
+    {ogImage && <meta name="twitter:image" content={typeof ogImage === "string" ? ogImage : ogImage.toString()} />}
+    <link rel="canonical" href={canonicalUrl.toString()} />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="alternate" type="application/rss+xml" title="FAQ RSS" href="/rss.xml" />
+    {analyticsId && (
+      <>
+        <script async src={`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(analyticsId)}`}></script>
+        <script is:inline define:vars={{ analyticsId }}>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){window.dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', analyticsId);
+        </script>
+      </>
+    )}
+    {structuredData && <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />}
   </head>
   <body>
     <Header title={siteTitle} />
-    <main
-      class="flex-1 container mx-auto px-4 md:px-6 py-12 grid grid-cols-1 md:grid-cols-[3fr_1fr] gap-8"
-    >
+    <main class="flex-1 container mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 md:py-12">
       <slot />
     </main>
-    <Footer title={siteTitle} />
+    <Footer title={siteTitle} xAccount={settings["x-account"]} />
   </body>
 </html>

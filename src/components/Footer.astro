@@ -1,15 +1,22 @@
 ---
 // src/components/Footer.astro
-const { title } = Astro.props;
+const { title, xAccount } = Astro.props;
+const xUrl = xAccount
+  ? (String(xAccount).startsWith("http") ? String(xAccount) : `https://x.com/${String(xAccount).replace(/^@/, "")}`)
+  : undefined;
 ---
 
-<footer class="bg-muted border-t">
-  <div
-    class="container mx-auto px-4 md:px-6 py-6 flex items-center justify-between"
-  >
+<footer class="border-t border-slate-200 bg-white">
+  <div class="container mx-auto flex max-w-5xl items-center justify-between px-4 py-8 sm:px-6">
     <p class="text-sm text-muted-foreground">
       &copy; {new Date().getFullYear()}
       {title}
     </p>
+    <nav aria-label="フッターナビゲーション" class="flex flex-wrap items-center justify-end gap-x-4 gap-y-2">
+      <a href="/contact" class="text-sm font-medium text-slate-600 hover:text-blue-800 hover:underline">お問い合わせ</a>
+      <a href="/privacy" class="text-sm font-medium text-slate-600 hover:text-blue-800 hover:underline">プライバシーポリシー</a>
+      {xUrl && <a href={xUrl} target="_blank" rel="noopener noreferrer" class="text-sm font-medium text-slate-600 hover:text-blue-800 hover:underline">X</a>}
+      <a href="/rss.xml" class="text-sm font-medium text-slate-600 hover:text-blue-800 hover:underline">RSS</a>
+    </nav>
   </div>
 </footer>

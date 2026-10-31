@@ -1,0 +1,20 @@
+---
+import Layout from "@layouts/Layout.astro";
+import SearchResults from "@components/SearchResults.astro";
+import CategoryList from "@components/CategoryList.astro";
+import { getAllFaqs, getCategories } from "@libs/microcms";
+
+export const prerender = true;
+
+const [faqs, categoryResponse] = await Promise.all([getAllFaqs(), getCategories()]);
+const categories = categoryResponse?.contents || [];
+---
+
+<Layout title="FAQ検索" description="キーワードやタグからFAQを検索できます。" robots="noindex,follow">
+  <div>
+    <SearchResults faqs={faqs} />
+  </div>
+  <aside>
+    <CategoryList categories={categories} />
+  </aside>
+</Layout>

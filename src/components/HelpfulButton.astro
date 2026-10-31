@@ -1,0 +1,30 @@
+---
+const { faqId } = Astro.props as { faqId: string };
+---
+<div class="mx-auto mt-8 max-w-md rounded-2xl border border-slate-200 bg-white px-5 py-6 text-center shadow-sm" data-helpful data-faq-id={faqId}>
+  <p class="font-semibold text-slate-800">この回答は役に立ちましたか？</p>
+  <button type="button" class="mt-4 inline-flex min-w-40 items-center justify-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-5 py-2.5 font-semibold text-blue-800 transition hover:border-blue-300 hover:bg-blue-100" aria-pressed="false">👍 役に立った <span data-count>0</span></button>
+  <p class="mt-2 text-sm text-slate-600" aria-live="polite"></p>
+</div>
+<script>
+  document.querySelectorAll("[data-helpful]").forEach((box) => {
+    const id = box.dataset.faqId;
+    const key = `faq-helpful:${id}`;
+    const button = box.querySelector("button");
+    const countNode = box.querySelector("[data-count]");
+    const status = box.querySelector("p[aria-live]");
+    const votes = JSON.parse(localStorage.getItem(key) || "{\"count\":0,\"voted\":false}");
+    countNode.textContent = votes.count;
+    button.setAttribute("aria-pressed", String(votes.voted));
+    button.addEventListener("click", () => {
+      const next = JSON.parse(localStorage.getItem(key) || "{\"count\":0,\"voted\":false}");
+      if (next.voted) return;
+      next.count += 1;
+      next.voted = true;
+      localStorage.setItem(key, JSON.stringify(next));
+      countNode.textContent = next.count;
+      button.setAttribute("aria-pressed", "true");
+      status.textContent = "投票ありがとうございます。";
+    });
+  });
+</script>

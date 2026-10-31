@@ -1,0 +1,80 @@
+---
+import Layout from "@layouts/Layout.astro";
+import BlogPost from "@components/BlogPost.astro";
+import Breadcrumb from "@components/Breadcrumb.astro";
+import RelatedFaqs from "@components/RelatedFaqs.astro";
+import SocialShare from "@components/SocialShare.astro";
+import { getFaqDetail, getAllFaqs } from "@libs/microcms";
+import HelpfulButton from "@components/HelpfulButton.astro";
+
+export async function getStaticPaths() {
+  const faqs = await getAllFaqs();
+  return faqs.map((content) => ({
+    params: { id: content.id },
+  }));
+}
+
+const { id } = Astro.params;
+const faq = await getFaqDetail(id);
+
+const allFaqs = await getAllFaqs();
+
+const titleText = faq.question || faq.title || "FAQ詳細";
+const siteUrl = Astro.site ?? new URL("https://example.com");
+const faqUrl = new URL(`/faq/${faq.id}`, siteUrl).toString();
+const breadcrumbItems = [
+  { label: "FAQトップ", href: new URL("/", siteUrl).toString() },
+  { label: titleText },
+];
+const structuredData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "FAQPage",
+      mainEntity: {
+        "@type": "Question",
+        name: titleText,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: [faq.answer, faq.content].filter(Boolean).join(" ").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim(),
+        },
+      },
+    },
+    {
+      "@type": "BreadcrumbList",
+      itemListElement: breadcrumbItems.map((item, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        name: item.label,
+        item: item.href || faqUrl,
+      })),
+    },
+  ],
+};
+---
+
+<Layout title={titleText} description={faq.description || `${titleText} よくある質問の回答です。`} image={faq.thumbnail?.url} ogType="article" structuredData={structuredData}>
+  <main class="mx-auto w-full max-w-5xl">
+    <Breadcrumb items={breadcrumbItems} />
+    <BlogPost faq={faq} />
+    {(faq.category?.length || faq.tags?.length) && <section class="mt-6 flex flex-wrap gap-x-8 gap-y-4 border-t border-slate-200 pt-5" aria-label="カテゴリとタグ">
+      {faq.category?.length > 0 && <div class="flex flex-wrap items-baseline gap-x-4 gap-y-2">
+        <h2 class="text-sm font-semibold text-slate-600">カテゴリ</h2>
+        {faq.category.map((category) => <a href={`/category/${category.id}`} class="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700 transition hover:bg-blue-100 hover:text-blue-800">{category.name}</a>)}
+      </div>}
+      {faq.tags?.length > 0 && <div class="mt-3 flex flex-wrap items-baseline gap-x-4 gap-y-2">
+        <h2 class="text-sm font-semibold text-slate-600">タグ</h2>
+        {faq.tags.map((tag) => <a href={`/search?tag=${encodeURIComponent(tag.id)}`} class="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700 transition hover:bg-blue-100 hover:text-blue-800">#{tag.name}</a>)}
+      </div>}
+    </section>}
+    <HelpfulButton faqId={faq.id} />
+    <SocialShare title={titleText} url={faqUrl} />
+    <RelatedFaqs current={faq} faqs={allFaqs} />
+  </main>
+</Layout>
+<script define:vars={{ faqId: faq.id }}>
+  const key = "faq-views";
+  const views = JSON.parse(localStorage.getItem(key) || "{}");
+  views[faqId] = (views[faqId] || 0) + 1;
+  localStorage.setItem(key, JSON.stringify(views));
+</script>

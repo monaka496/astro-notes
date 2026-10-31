@@ -1,5 +1,5 @@
 ---
-import { getBlogList, getCategoryList } from "@libs/microcms.ts";
+import { getFaqs, getCategories } from "@libs/microcms";
 import Layout from "@layouts/Layout.astro";
 import BlogList from "@components/BlogList.astro";
 import Pagination from "@components/Pagination.astro";
@@ -8,23 +8,23 @@ import { LIMIT } from "@constants/index.ts";
 export const prerender = true;
 
 export async function getStaticPaths() {
-  const { totalCount } = await getBlogList({ limit: 1 });
+  const { totalCount } = await getFaqs({ limit: 1 });
   const totalPages = Math.ceil(totalCount / LIMIT);
 
-  return Array.from({ length: totalPages }).map((_, i) => ({
-    params: { page: (i + 1).toString() },
+  return Array.from({ length: Math.max(0, totalPages - 1) }).map((_, i) => ({
+    params: { page: (i + 2).toString() },
   }));
 }
 
 const { page } = Astro.params;
 const currentPage = Number(page) || 1;
 
-const { contents: blogs, totalCount } = await getBlogList({
+const { contents: blogs, totalCount } = await getFaqs({
   limit: LIMIT,
   offset: (currentPage - 1) * LIMIT,
 });
 
-const { contents: categories } = await getCategoryList();
+const { contents: categories } = await getCategories();
 
 const Meta = {
   title: `Page ${currentPage}`,

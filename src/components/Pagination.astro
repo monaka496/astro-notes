@@ -29,27 +29,37 @@ const getPageUrl = (page: number) => {
     path = page === 1 ? "/" : `${basePath}/p/${page}`;
   }
 
-  return q ? `${path}?q=${q}` : path;
+  return q ? `${path}?${new URLSearchParams({ q }).toString()}` : path;
 };
+
+const visiblePages = totalPages <= 7
+  ? pages
+  : [...new Set([1, current - 1, current, current + 1, totalPages])].filter((page) => page >= 1 && page <= totalPages).sort((a, b) => a - b);
 ---
 
-<ul class="flex justify-center gap-2 py-4">
+<nav aria-label="ページネーション" class="py-6">
+<ul class="flex flex-wrap items-center justify-center gap-2">
+  {current > 1 && <li><a href={getPageUrl(current - 1)} rel="prev" class="rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">前へ</a></li>}
   {
-    pages.map((p) => (
+    visiblePages.map((p, index) => (
+      <>
+      {index > 0 && p - visiblePages[index - 1] > 1 && <li aria-hidden="true" class="px-1 text-slate-400">…</li>}
       <li>
         {current !== p ? (
           <a
             href={getPageUrl(p)}
-            class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 transition"
+            class="inline-flex min-w-10 justify-center rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-blue-800"
           >
             {p}
           </a>
         ) : (
-          <span class="px-4 py-2 border border-blue-600 bg-blue-600 text-white rounded-md font-bold hover:bg-blue-700 transition">
+          <span class="inline-flex min-w-10 justify-center rounded-md bg-blue-800 px-3 py-2 text-sm font-bold text-white" aria-current="page">
             {p}
           </span>
         )}
       </li>
+      </>
     ))
   }
 </ul>
+</nav>
