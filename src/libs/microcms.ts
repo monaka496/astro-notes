@@ -2,17 +2,17 @@ import { createClient, type MicroCMSQueries } from "microcms-js-sdk";
 
 // Cloudflare Pagesやビルド環境向けに process.env / フォールバック値を参照
 const serviceDomain =
-  import.meta.env.MICROCMS_SERVICE_DOMAIN ||
-  (typeof process !== "undefined" ? process.env.MICROCMS_SERVICE_DOMAIN : "") ||
+  import.meta.env.PUBLIC_MICROCMS_SERVICE_DOMAIN ||
+  (typeof process !== "undefined" ? process.env.PUBLIC_MICROCMS_SERVICE_DOMAIN : "") ||
   "";
 
 const apiKey =
-  import.meta.env.MICROCMS_API_KEY ||
-  (typeof process !== "undefined" ? process.env.MICROCMS_API_KEY : "") ||
+  import.meta.env.PUBLIC_MICROCMS_API_KEY ||
+  (typeof process !== "undefined" ? process.env.PUBLIC_MICROCMS_API_KEY : "") ||
   "";
 
 if (!serviceDomain || !apiKey) {
-  console.warn("MICROCMS_SERVICE_DOMAIN or MICROCMS_API_KEY is missing.");
+  console.warn("PUBLIC_MICROCMS_SERVICE_DOMAIN or PUBLIC_MICROCMS_API_KEY is missing.");
 }
 
 export const client = createClient({
@@ -111,16 +111,21 @@ export const getBlogs = async (queries?: MicroCMSQueries): Promise<BlogResponse>
 export const getFaqDetail = async (
   contentId: string,
   queries?: MicroCMSQueries
-): Promise<Faq> => {
-  const faq = await client.getListDetail<Faq>({
-    endpoint: "faq",
-    contentId,
-    queries,
-  });
-  return {
-    ...faq,
-    tags: faq.tag?.map((tag) => ({ id: tag.id, name: tag.tag })) || faq.tags || [],
-  };
+): Promise<Faq | null> => {
+  try {
+    const faq = await client.getListDetail<Faq>({
+      endpoint: "faq",
+      contentId,
+      queries,
+    });
+    return {
+      ...faq,
+      tags: faq.tag?.map((tag) => ({ id: tag.id, name: tag.tag })) || faq.tags || [],
+    };
+  } catch (error) {
+    console.error("Failed to fetch FAQ detail:", error);
+    return null;
+  }
 };
 
 export type TagResponse = {

@@ -1,0 +1,48 @@
+<script>
+  import { getFaqDetail } from "@libs/microcms";
+
+  const params = new URLSearchParams(window.location.search);
+  const draftKey = params.get("draftKey");
+  const previewOnly = document.querySelector("[data-preview-only]") !== null;
+  const article = document.querySelector<HTMLElement>("[data-faq-detail]");
+  const contentId = params.get("contentId") || article?.dataset.faqId;
+  const loading = document.querySelector<HTMLElement>("[data-preview-loading]");
+  const error = document.querySelector<HTMLElement>("[data-preview-error]");
+  const detailPage = article?.closest<HTMLElement>("[data-faq-detail-page]");
+
+  if (draftKey || previewOnly) {
+    if (article) article.hidden = true;
+    detailPage?.querySelectorAll<HTMLElement>(":scope > *").forEach((element) => {
+      if (element !== article && element !== loading && element !== error) element.hidden = true;
+    });
+    if (loading) loading.hidden = false;
+
+    if (!contentId || !draftKey) {
+      if (loading) loading.hidden = true;
+      if (error) error.hidden = false;
+    } else {
+      try {
+        const faq = await getFaqDetail(contentId, { draftKey });
+        if (!faq) throw new Error("FAQ preview was not found.");
+
+        const question = article?.querySelector<HTMLElement>("[data-faq-question]");
+        const answerRow = article?.querySelector<HTMLElement>("[data-faq-answer-row]");
+        const answer = article?.querySelector<HTMLElement>("[data-faq-answer]");
+        const body = article?.querySelector<HTMLElement>("[data-faq-body]");
+        const title = faq.question || faq.title || "無題の質問";
+
+        if (question) question.textContent = title;
+        if (answerRow) answerRow.hidden = !faq.answer;
+        if (answer) answer.textContent = faq.answer || "";
+        if (body) body.innerHTML = faq.content || "";
+        if (article) article.hidden = false;
+        if (loading) loading.hidden = true;
+        document.title = `${title} | FAQプレビュー`;
+      } catch (fetchError) {
+        console.error("Failed to load FAQ preview:", fetchError);
+        if (loading) loading.hidden = true;
+        if (error) error.hidden = false;
+      }
+    }
+  }
+</script>

@@ -13,15 +13,18 @@ Node.js 24 以上
 ルート直下に`.env`ファイルを作成し、下記の情報を入力してください。
 
 ```
-MICROCMS_API_KEY=xxxxxxxxxx
-MICROCMS_SERVICE_DOMAIN=xxxxxxxxxx
+PUBLIC_MICROCMS_API_KEY=xxxxxxxxxx
+PUBLIC_MICROCMS_SERVICE_DOMAIN=xxxxxxxxxx
 SITE_URL=https://your-domain.example
 ```
 
-`MICROCMS_API_KEY`  
-microCMS 管理画面の「サービス設定 > API キー」から確認することができます。
+画面プレビューURLは `https://your-domain.example/preview/?contentId={CONTENT_ID}&draftKey={DRAFT_KEY}` に設定してください。
 
-`MICROCMS_SERVICE_DOMAIN`
+`PUBLIC_MICROCMS_API_KEY`  
+microCMS 管理画面の「サービス設定 > API キー」から確認することができます。
+このAPIキーはブラウザへ公開されるため、読み取り専用（GETのみ）の権限にしてください。
+
+`PUBLIC_MICROCMS_SERVICE_DOMAIN`
 
 microCMS 管理画面の URL（https://xxxxxxxx.microcms.io）の xxxxxxxx の部分です。
 
@@ -41,6 +44,8 @@ npm install
 
 2. 開発環境の起動
 
+microCMSの画面プレビューURLは `http://localhost:4321/preview/?contentId={CONTENT_ID}&draftKey={DRAFT_KEY}` に設定すると、ローカルでも下書きを表示できます。
+
 ```bash
 npm run dev
 ```
@@ -59,11 +64,9 @@ npm run dev
 
 設定後はコンテンツ編集画面にて画面プレビューボタンが利用可能になります。
 
-## Vercelへのデプロイ
+## デプロイ
 
-FAQ詳細ページは、microCMSの下書きプレビューを受け付けるためリクエスト時にサーバーで描画します。プロジェクトにはAstro 6対応の `@astrojs/vercel` アダプターを設定済みです。Vercelへデプロイすると、公開FAQと `?draftKey=...` 付きのプレビューの両方が利用できます。
-
-別のホスティング環境を利用する場合は、その環境に対応するAstroアダプターへ置き換えてください。静的HTMLのみを配信するホスティングでは、下書きプレビューをリクエスト時に取得できません。
+サイトは静的にビルドされ、`/preview/` ページがブラウザからmicroCMSへ下書きデータを取得します。このため、静的HTMLを配信できるホスティングで利用できます。
 
 ## Node.js のバージョンについて
 
