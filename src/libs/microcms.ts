@@ -123,19 +123,6 @@ export const getFaqDetail = async (
   };
 };
 
-// FAQ下書きプレビューの取得
-export const getFaqPreview = async (contentId: string, draftKey: string): Promise<Faq> => {
-  const faq = await client.get<Faq>({
-    endpoint: "faq",
-    contentId,
-    queries: { draftKey },
-  });
-  return {
-    ...faq,
-    tags: faq.tag?.map((tag) => ({ id: tag.id, name: tag.tag })) || faq.tags || [],
-  };
-};
-
 export type TagResponse = {
   totalCount: number;
   offset: number;
@@ -149,7 +136,7 @@ export const getTags = async (queries?: MicroCMSQueries): Promise<TagResponse> =
 
 // カテゴリ一覧の取得
 export const getCategories = async (queries?: MicroCMSQueries) => {
-  return await client.get({
+  return await client.get<{ contents: Category[] }>({
     endpoint: "categories",
     queries,
   });

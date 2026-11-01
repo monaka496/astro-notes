@@ -5,18 +5,16 @@ import Breadcrumb from "@components/Breadcrumb.astro";
 import RelatedFaqs from "@components/RelatedFaqs.astro";
 import SocialShare from "@components/SocialShare.astro";
 import FaqSearch from "@components/FaqSearch.astro";
-import { getFaqDetail, getFaqPreview, getAllFaqs } from "@libs/microcms";
+import { getFaqDetail, getAllFaqs } from "@libs/microcms";
 
-export async function getStaticPaths() {
-  const faqs = await getAllFaqs();
-  return faqs.map((content) => ({
-    params: { id: content.id },
-  }));
-}
+export const prerender = false;
 
 const { id } = Astro.params;
+if (!id) throw new Error("FAQ ID is required.");
 const draftKey = Astro.url.searchParams.get("draftKey");
-const faq = draftKey ? await getFaqPreview(id, draftKey) : await getFaqDetail(id);
+const faq = await getFaqDetail(id, draftKey ? { draftKey } : undefined);
+const categories = faq.category ?? [];
+const tags = faq.tags ?? [];
 
 const allFaqs = await getAllFaqs();
 
@@ -59,17 +57,17 @@ const structuredData = {
     {draftKey && <div class="mb-5 rounded-lg border border-yellow-300 bg-yellow-100 px-4 py-3 font-medium text-yellow-900" role="status">⚠️ プレビューモード表示中（下書きデータ）</div>}
     <Breadcrumb items={breadcrumbItems} />
     <BlogPost faq={faq} />
-    {(faq.category?.length || faq.tags?.length) && <section class="mt-6 space-y-4 border-t border-slate-200 pt-5" aria-label="カテゴリとタグ">
-      {faq.category?.length > 0 && <div class="flex flex-col gap-2 sm:flex-row sm:items-start">
+    {(categories.length || tags.length) > 0 && <section class="mt-6 space-y-4 border-t border-slate-200 pt-5" aria-label="カテゴリとタグ">
+      {categories.length > 0 && <div class="flex flex-col gap-2 sm:flex-row sm:items-start">
         <h2 class="w-16 shrink-0 pt-1 text-sm font-semibold text-slate-600">カテゴリ</h2>
         <ul class="flex flex-wrap gap-2">
-          {faq.category.map((category) => <li><a href={`/category/${category.id}/`} class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700 transition hover:bg-blue-100 hover:text-blue-800">{category.name}</a></li>)}
+          {categories.map((category) => <li><a href={`/category/${category.id}/`} class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700 transition hover:bg-blue-100 hover:text-blue-800">{category.name}</a></li>)}
         </ul>
       </div>}
-      {faq.tags?.length > 0 && <div class="flex flex-col gap-2 sm:flex-row sm:items-start">
+      {tags.length > 0 && <div class="flex flex-col gap-2 sm:flex-row sm:items-start">
         <h2 class="w-16 shrink-0 pt-1 text-sm font-semibold text-slate-600">タグ</h2>
         <ul class="flex flex-wrap gap-2">
-          {faq.tags.map((tag) => <li><a href={`/search/?tag=${encodeURIComponent(tag.id)}`} class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700 transition hover:bg-blue-100 hover:text-blue-800">#{tag.name}</a></li>)}
+          {tags.map((tag) => <li><a href={`/search/?tag=${encodeURIComponent(tag.id)}`} class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700 transition hover:bg-blue-100 hover:text-blue-800">#{tag.name}</a></li>)}
         </ul>
       </div>}
     </section>}

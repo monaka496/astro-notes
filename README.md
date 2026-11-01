@@ -61,15 +61,9 @@ npm run dev
 
 ## Vercelへのデプロイ
 
-Vercelへデプロイする場合は、`@astrojs/vercel`をインストールし、`astro.config.mjs`にて以下を追加してください。
+FAQ詳細ページは、microCMSの下書きプレビューを受け付けるためリクエスト時にサーバーで描画します。プロジェクトにはAstro 6対応の `@astrojs/vercel` アダプターを設定済みです。Vercelへデプロイすると、公開FAQと `?draftKey=...` 付きのプレビューの両方が利用できます。
 
-```javascript
-import vercel from "@astrojs/vercel";
-
-export default defineConfig({
-  adapter: vercel(),
-});
-```
+別のホスティング環境を利用する場合は、その環境に対応するAstroアダプターへ置き換えてください。静的HTMLのみを配信するホスティングでは、下書きプレビューをリクエスト時に取得できません。
 
 ## Node.js のバージョンについて
 
