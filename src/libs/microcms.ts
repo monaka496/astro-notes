@@ -1,18 +1,21 @@
 import { createClient, type MicroCMSQueries } from "microcms-js-sdk";
 
-// Cloudflare Pagesやビルド環境向けに process.env / フォールバック値を参照
 const serviceDomain =
   import.meta.env.PUBLIC_MICROCMS_SERVICE_DOMAIN ||
-  (typeof process !== "undefined" ? process.env.PUBLIC_MICROCMS_SERVICE_DOMAIN : "") ||
+  import.meta.env.MICROCMS_SERVICE_DOMAIN ||
+  (typeof process !== "undefined" && process.env?.PUBLIC_MICROCMS_SERVICE_DOMAIN) ||
+  (typeof process !== "undefined" && process.env?.MICROCMS_SERVICE_DOMAIN) ||
   "";
 
 const apiKey =
   import.meta.env.PUBLIC_MICROCMS_API_KEY ||
-  (typeof process !== "undefined" ? process.env.PUBLIC_MICROCMS_API_KEY : "") ||
+  import.meta.env.MICROCMS_API_KEY ||
+  (typeof process !== "undefined" && process.env?.PUBLIC_MICROCMS_API_KEY) ||
+  (typeof process !== "undefined" && process.env?.MICROCMS_API_KEY) ||
   "";
 
 if (!serviceDomain || !apiKey) {
-  console.warn("PUBLIC_MICROCMS_SERVICE_DOMAIN or PUBLIC_MICROCMS_API_KEY is missing.");
+  console.warn("MICROCMS_SERVICE_DOMAIN or MICROCMS_API_KEY is missing in environment variables.");
 }
 
 export const client = createClient({
