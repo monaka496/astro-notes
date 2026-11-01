@@ -5,8 +5,7 @@ import Breadcrumb from "@components/Breadcrumb.astro";
 import RelatedFaqs from "@components/RelatedFaqs.astro";
 import SocialShare from "@components/SocialShare.astro";
 import FaqSearch from "@components/FaqSearch.astro";
-import { getFaqDetail, getAllFaqs } from "@libs/microcms";
-import HelpfulButton from "@components/HelpfulButton.astro";
+import { getFaqDetail, getFaqPreview, getAllFaqs } from "@libs/microcms";
 
 export async function getStaticPaths() {
   const faqs = await getAllFaqs();
@@ -16,7 +15,8 @@ export async function getStaticPaths() {
 }
 
 const { id } = Astro.params;
-const faq = await getFaqDetail(id);
+const draftKey = Astro.url.searchParams.get("draftKey");
+const faq = draftKey ? await getFaqPreview(id, draftKey) : await getFaqDetail(id);
 
 const allFaqs = await getAllFaqs();
 
@@ -56,6 +56,7 @@ const structuredData = {
 
 <Layout title={titleText} description={faq.description || `${titleText} よくある質問の回答です。`} image={faq.thumbnail?.url} ogType="article" structuredData={structuredData}>
   <main class="mx-auto w-full max-w-5xl">
+    {draftKey && <div class="mb-5 rounded-lg border border-yellow-300 bg-yellow-100 px-4 py-3 font-medium text-yellow-900" role="status">⚠️ プレビューモード表示中（下書きデータ）</div>}
     <Breadcrumb items={breadcrumbItems} />
     <BlogPost faq={faq} />
     {(faq.category?.length || faq.tags?.length) && <section class="mt-6 space-y-4 border-t border-slate-200 pt-5" aria-label="カテゴリとタグ">
@@ -72,7 +73,6 @@ const structuredData = {
         </ul>
       </div>}
     </section>}
-    <HelpfulButton faqId={faq.id} />
     <SocialShare title={titleText} url={faqUrl} />
     <RelatedFaqs current={faq} faqs={allFaqs} />
     <section class="mt-10 rounded-2xl bg-slate-50 p-5 ring-1 ring-slate-200 sm:p-7" aria-label="FAQを再検索">

@@ -39,12 +39,10 @@ const questionText = data.question || data.title || "無題の質問";
   </h1>
 
   <section class="mt-7 sm:mt-8">
-    <div class="flex items-start gap-3 text-base leading-relaxed text-slate-800 sm:text-lg">
+    {answerText && <div class="flex items-start gap-3 text-base leading-relaxed text-slate-800 sm:text-lg">
       <span class="inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-sm font-bold text-emerald-800 sm:size-10">A.</span>
-      <div class="min-w-0 flex-1">
-        {answerText && <p class="mb-4 font-semibold leading-relaxed text-slate-800">{answerText}</p>}
-        {bodyHtml && <div set:html={bodyHtml} class="entry-content prose prose-lg mt-0 max-w-none" />}
-      </div>
-    </div>
+      <p class="mb-4 min-w-0 flex-1 font-semibold leading-relaxed text-slate-800">{answerText}</p>
+    </div>}
+    {bodyHtml && <div set:html={bodyHtml} class="entry-content prose prose-lg mt-0 max-w-none" />}
   </section>
 </article>

@@ -123,6 +123,19 @@ export const getFaqDetail = async (
   };
 };
 
+// FAQ下書きプレビューの取得
+export const getFaqPreview = async (contentId: string, draftKey: string): Promise<Faq> => {
+  const faq = await client.get<Faq>({
+    endpoint: "faq",
+    contentId,
+    queries: { draftKey },
+  });
+  return {
+    ...faq,
+    tags: faq.tag?.map((tag) => ({ id: tag.id, name: tag.tag })) || faq.tags || [],
+  };
+};
+
 export type TagResponse = {
   totalCount: number;
   offset: number;
