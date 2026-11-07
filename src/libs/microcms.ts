@@ -1,27 +1,38 @@
 import { createClient, type MicroCMSQueries } from "microcms-js-sdk";
 
 const serviceDomain =
-  import.meta.env.PUBLIC_MICROCMS_SERVICE_DOMAIN ||
-  import.meta.env.MICROCMS_SERVICE_DOMAIN ||
-  (typeof process !== "undefined" && process.env?.PUBLIC_MICROCMS_SERVICE_DOMAIN) ||
-  (typeof process !== "undefined" && process.env?.MICROCMS_SERVICE_DOMAIN) ||
+  (import.meta.env && import.meta.env.MICROCMS_SERVICE_DOMAIN) ||
+  (typeof process !== "undefined" ? process.env.MICROCMS_SERVICE_DOMAIN : undefined) ||
   "";
 
 const apiKey =
-  import.meta.env.PUBLIC_MICROCMS_API_KEY ||
-  import.meta.env.MICROCMS_API_KEY ||
-  (typeof process !== "undefined" && process.env?.PUBLIC_MICROCMS_API_KEY) ||
-  (typeof process !== "undefined" && process.env?.MICROCMS_API_KEY) ||
+  (import.meta.env && import.meta.env.MICROCMS_API_KEY) ||
+  (typeof process !== "undefined" ? process.env.MICROCMS_API_KEY : undefined) ||
   "";
 
-if (!serviceDomain || !apiKey) {
-  console.warn("MICROCMS_SERVICE_DOMAIN or MICROCMS_API_KEY is missing in environment variables.");
+export const isMicrocmsConfigured = Boolean(serviceDomain.trim() && apiKey.trim());
+
+const requireMicrocmsConfig = () => {
+  if (!isMicrocmsConfigured) {
+    throw new Error(
+      "microCMS is not configured. Set MICROCMS_SERVICE_DOMAIN and MICROCMS_API_KEY in the project .env file."
+    );
+  }
+};
+
+if (!isMicrocmsConfigured) {
+  console.warn(
+    "[microCMS] Warning: MICROCMS_SERVICE_DOMAIN or MICROCMS_API_KEY is not defined in .env or environment variables."
+  );
 }
 
 export const client = createClient({
-  serviceDomain,
-  apiKey,
+  serviceDomain: serviceDomain || "dummy",
+  apiKey: apiKey || "dummy",
 });
+
+export const getCustomClient = (domain: string, key: string) =>
+  createClient({ serviceDomain: domain, apiKey: key });
 
 export type Category = {
   id: string;
@@ -34,15 +45,30 @@ export type Tag = {
   name?: string;
 };
 
+export type FaqContentBlock =
+  | { fieldId: "richeditor"; richeditor?: string }
+  | { fieldId: "html"; html?: string }
+  | {
+      fieldId: "affiliate_product";
+      title?: string;
+      image?: { url: string; height?: number; width?: number };
+      description?: string;
+      amazon_url?: string;
+      rakuten_url?: string;
+      yahoo_url?: string;
+    }
+  | { fieldId: "affiliate_cta"; label?: string; micro_copy?: string; url?: string; style?: string[] }
+  | { fieldId: "affiliate_banner"; banner_image?: { url: string; height?: number; width?: number }; url?: string };
+
 export type Faq = {
   id: string;
   createdAt: string;
   updatedAt: string;
-  publishedAt: string;
-  revisedAt: string;
+  publishedAt?: string;
+  revisedAt?: string;
   title?: string;
   description?: string;
-  content?: string;
+  content?: FaqContentBlock[] | string;
   question?: string;
   answer: string;
   category?: Category[];
@@ -75,6 +101,7 @@ export type BlogResponse = {
 
 // FAQ一覧の取得
 export const getFaqs = async (queries?: MicroCMSQueries): Promise<FaqResponse> => {
+  requireMicrocmsConfig();
   const response = await client.get<FaqResponse>({
     endpoint: "faq",
     queries,
@@ -104,6 +131,7 @@ export const getAllFaqs = async (): Promise<Faq[]> => {
 
 // ブログ一覧取得（endpoint が "blogs" や "blog" の場合）
 export const getBlogs = async (queries?: MicroCMSQueries): Promise<BlogResponse> => {
+  requireMicrocmsConfig();
   return await client.get<BlogResponse>({
     endpoint: "blogs", // microCMSのエンドポイント名に合わせて調整してください
     queries,
@@ -116,6 +144,7 @@ export const getFaqDetail = async (
   queries?: MicroCMSQueries
 ): Promise<Faq | null> => {
   try {
+    requireMicrocmsConfig();
     const faq = await client.getListDetail<Faq>({
       endpoint: "faq",
       contentId,
@@ -139,11 +168,13 @@ export type TagResponse = {
 };
 
 export const getTags = async (queries?: MicroCMSQueries): Promise<TagResponse> => {
+  requireMicrocmsConfig();
   return await client.get<TagResponse>({ endpoint: "tag", queries });
 };
 
 // カテゴリ一覧の取得
 export const getCategories = async (queries?: MicroCMSQueries) => {
+  requireMicrocmsConfig();
   return await client.get<{ contents: Category[] }>({
     endpoint: "categories",
     queries,

@@ -1,6 +1,7 @@
 import rss from "@astrojs/rss";
 import type { APIRoute } from "astro";
 import { getAllFaqs } from "@libs/microcms";
+import { getFaqContentHtml, getFaqContentText } from "@libs/faq-content";
 
 const escapeHtml = (value: string) =>
   value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
@@ -11,8 +12,9 @@ export const GET: APIRoute = async ({ site }) => {
     .sort((a, b) => new Date(b.publishedAt || b.createdAt).getTime() - new Date(a.publishedAt || a.createdAt).getTime())
     .map((faq) => {
       const title = faq.question || faq.title || "無題の質問";
-      const body = [faq.answer ? `<p>${escapeHtml(faq.answer)}</p>` : "", faq.content || ""].filter(Boolean).join("\n");
-      const plainText = [faq.answer, faq.content, faq.description]
+      const contentHtml = getFaqContentHtml(faq.content);
+      const body = [faq.answer ? `<p>${escapeHtml(faq.answer)}</p>` : "", contentHtml].filter(Boolean).join("\n");
+      const plainText = [faq.answer, getFaqContentText(faq.content), faq.description]
         .filter(Boolean)
         .join(" ")
         .replace(/<[^>]*>/g, " ")

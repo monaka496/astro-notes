@@ -5,7 +5,7 @@ import FaqPreviewHydrator from "@components/FaqPreviewHydrator.astro";
 ---
 
 <Layout title="FAQプレビュー" description="microCMSの下書きプレビューです。" robots="noindex,nofollow">
-  <main data-preview-only class="mx-auto w-full max-w-5xl">
+  <main data-preview-only data-service-domain={import.meta.env.MICROCMS_SERVICE_DOMAIN || ""} data-api-key={import.meta.env.MICROCMS_API_KEY || ""} class="mx-auto w-full max-w-5xl">
     <div data-preview-loading class="mb-5 rounded-lg border border-yellow-300 bg-yellow-100 px-4 py-3 font-medium text-yellow-900" role="status">下書きを読み込んでいます…</div>
     <div data-preview-error hidden class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8">
       <article class="prose max-w-none">

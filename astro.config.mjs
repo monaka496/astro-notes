@@ -8,6 +8,9 @@ const env = loadEnv(process.env.NODE_ENV || "development", process.cwd(), "");
 export default defineConfig({
   site: env.SITE_URL || process.env.SITE_URL || "https://faq.monaka496.com",
   trailingSlash: "ignore",
+  devToolbar: {
+    enabled: false,
+  },
   integrations: [
     sitemap({
       filter: (page) => {

@@ -1,14 +1,62 @@
 <script>
-  import { getFaqDetail } from "@libs/microcms";
+  import { createClient } from "microcms-js-sdk";
+  import type { Faq, FaqContentBlock } from "@libs/microcms";
+  import { getFaqContentBlocks } from "@libs/faq-content";
+  import { getCtaButtonColor } from "@libs/affiliate";
 
   const params = new URLSearchParams(window.location.search);
   const draftKey = params.get("draftKey");
-  const previewOnly = document.querySelector("[data-preview-only]") !== null;
+  const previewRoot = document.querySelector<HTMLElement>("[data-preview-only]");
+  const previewOnly = previewRoot !== null;
+  const serviceDomain = previewRoot?.dataset.serviceDomain || "";
+  const apiKey = previewRoot?.dataset.apiKey || "";
   const article = document.querySelector<HTMLElement>("[data-faq-detail]");
   const contentId = params.get("contentId") || article?.dataset.faqId;
   const loading = document.querySelector<HTMLElement>("[data-preview-loading]");
   const error = document.querySelector<HTMLElement>("[data-preview-error]");
   const detailPage = article?.closest<HTMLElement>("[data-faq-detail-page]");
+
+  const escapeHtml = (value = "") => value.replace(/[&<>\"']/g, (char) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;",
+  })[char]!);
+  const safeLink = (value?: string) => {
+    if (!value) return "";
+    try {
+      const url = new URL(value);
+      return ["http:", "https:"].includes(url.protocol) ? url.toString() : "";
+    } catch {
+      return "";
+    }
+  };
+  const renderContentBlock = (block: FaqContentBlock) => {
+    if (block.fieldId === "richeditor") return `<div class="faq-rich-content">${block.richeditor || ""}</div>`;
+    if (block.fieldId === "html") return `<div class="faq-custom-html">${block.html || ""}</div>`;
+    if (block.fieldId === "affiliate_product") {
+      const image = block.image?.url ? `<img src="${escapeHtml(block.image.url)}" alt="${escapeHtml(block.title)}" class="mx-auto max-h-56 w-full max-w-56 rounded-lg object-contain sm:mx-0" />` : "";
+      const links = [["Amazon", block.amazon_url], ["楽天市場", block.rakuten_url], ["Yahoo!ショッピング", block.yahoo_url]]
+        .map(([label, href]) => safeLink(href) ? `<a href="${escapeHtml(safeLink(href))}" target="_blank" rel="sponsored nofollow noopener noreferrer" class="inline-flex rounded-lg bg-amber-500 px-4 py-2 text-sm font-bold text-white no-underline">${label}</a>` : "")
+        .join("");
+      return `<section class="not-prose my-8 flex flex-col gap-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center">${image}<div class="min-w-0 flex-1">${block.title ? `<h2 class="mb-2 text-lg font-bold text-slate-900">${escapeHtml(block.title)}</h2>` : ""}${block.description ? `<p class="mb-4 whitespace-pre-wrap text-sm leading-relaxed text-slate-700">${escapeHtml(block.description)}</p>` : ""}<div class="flex flex-wrap gap-2">${links}</div></div></section>`;
+    }
+    if (block.fieldId === "affiliate_cta") {
+      const href = safeLink(block.url);
+      return `<div class="not-prose my-8 text-center">${block.micro_copy ? `<p class="mb-2 text-sm font-semibold text-slate-600">${escapeHtml(block.micro_copy)}</p>` : ""}${href ? `<a href="${escapeHtml(href)}" target="_blank" rel="sponsored nofollow noopener noreferrer" style="background-color:${getCtaButtonColor(block.style)}" class="inline-flex rounded-xl px-6 py-3 font-bold text-white no-underline shadow-sm transition hover:brightness-90">${escapeHtml(block.label || "詳しくはこちら")}</a>` : ""}${block.style?.length ? `<p class="mt-2 text-xs text-slate-500">${escapeHtml(block.style.join("・"))}</p>` : ""}</div>`;
+    }
+    if (block.fieldId === "affiliate_banner") {
+      const href = safeLink(block.url);
+      return href && block.banner_image?.url ? `<a href="${escapeHtml(href)}" target="_blank" rel="sponsored nofollow noopener noreferrer" class="not-prose my-8 block overflow-hidden rounded-xl no-underline"><img src="${escapeHtml(block.banner_image.url)}" alt="" class="h-auto w-full" /></a>` : "";
+    }
+    return "";
+  };
+
+  const activateInsertedScripts = (root: HTMLElement) => {
+    root.querySelectorAll("script").forEach((original) => {
+      const script = document.createElement("script");
+      for (const attribute of original.attributes) script.setAttribute(attribute.name, attribute.value);
+      script.textContent = original.textContent;
+      original.replaceWith(script);
+    });
+  };
 
   if (draftKey || previewOnly) {
     if (article) article.hidden = true;
@@ -17,12 +65,13 @@
     });
     if (loading) loading.hidden = false;
 
-    if (!contentId || !draftKey) {
+    if (!contentId || !draftKey || !serviceDomain || !apiKey) {
       if (loading) loading.hidden = true;
       if (error) error.hidden = false;
     } else {
       try {
-        const faq = await getFaqDetail(contentId, { draftKey });
+        const client = createClient({ serviceDomain, apiKey });
+        const faq = await client.getListDetail<Faq>({ endpoint: "faq", contentId, queries: { draftKey } });
         if (!faq) throw new Error("FAQ preview was not found.");
 
         const question = article?.querySelector<HTMLElement>("[data-faq-question]");
@@ -34,7 +83,10 @@
         if (question) question.textContent = title;
         if (answerRow) answerRow.hidden = !faq.answer;
         if (answer) answer.textContent = faq.answer || "";
-        if (body) body.innerHTML = faq.content || "";
+        if (body) {
+          body.innerHTML = getFaqContentBlocks(faq.content).map(renderContentBlock).join("");
+          activateInsertedScripts(body);
+        }
         if (article) article.hidden = false;
         if (loading) loading.hidden = true;
         document.title = `${title} | FAQプレビュー`;

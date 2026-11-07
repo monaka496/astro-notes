@@ -5,7 +5,9 @@ import {
   responsiveImageTransformer,
   codeBlockFileNameTransformer,
 } from "microcms-rich-editor-handler";
-import type { Blog, Faq } from "@libs/microcms";
+import type { Blog, Faq, FaqContentBlock } from "@libs/microcms";
+import { getFaqContentBlocks } from "@libs/faq-content";
+import { getCtaButtonColor } from "@libs/affiliate";
 
 interface Props {
   blog?: Blog;
@@ -16,19 +18,33 @@ interface Props {
 const { blog, faq, previewMode = false } = Astro.props;
 const data: Partial<Blog & Faq> = faq || blog || {};
 const answerText = data.answer || "";
-const rawContent = data.content || "";
-
-const { html: bodyHtml } = rawContent
-  ? await microCMSRichEditorHandler(rawContent, {
-      transformers: [
-        responsiveImageTransformer(),
-        codeBlockFileNameTransformer({ attributes: { class: "fileName" } }),
-        syntaxHighlightingByShikiTransformer({
-          defaultHighlightOptions: { lang: "javascript", theme: "github-dark" },
-        }),
-      ],
-    })
-  : { html: "" };
+const contentBlocks = getFaqContentBlocks(data.content);
+const renderRichEditor = async (source: string) =>
+  (await microCMSRichEditorHandler(source, {
+    transformers: [
+      responsiveImageTransformer(),
+      codeBlockFileNameTransformer({ attributes: { class: "fileName" } }),
+      syntaxHighlightingByShikiTransformer({
+        defaultHighlightOptions: { lang: "javascript", theme: "github-dark" },
+      }),
+    ],
+  })).html;
+const safeLink = (value?: string) => {
+  if (!value) return undefined;
+  try {
+    const url = new URL(value);
+    return ["http:", "https:"].includes(url.protocol) ? url.toString() : undefined;
+  } catch {
+    return undefined;
+  }
+};
+const renderedBlocks: Array<{ block: FaqContentBlock; richHtml?: string }> = [];
+for (const block of contentBlocks) {
+  renderedBlocks.push({
+    block,
+    richHtml: block.fieldId === "richeditor" && block.richeditor ? await renderRichEditor(block.richeditor) : undefined,
+  });
+}
 
 const questionText = data.question || data.title || (previewMode ? "下書きプレビュー" : "無題の質問");
 ---
@@ -44,6 +60,34 @@ const questionText = data.question || data.title || (previewMode ? "下書きプ
       <span class="inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-sm font-bold text-emerald-800 sm:size-10">A.</span>
       <p data-faq-answer class="mb-4 min-w-0 flex-1 font-semibold leading-relaxed text-slate-800">{answerText}</p>
     </div>
-    <div data-faq-body set:html={bodyHtml} class="entry-content prose prose-lg mt-0 max-w-none" />
+    <div data-faq-body class="entry-content prose prose-lg mt-0 max-w-none">
+      {renderedBlocks.map(({ block, richHtml }) => {
+        if (block.fieldId === "richeditor") return <div class="faq-rich-content" set:html={richHtml || ""} />;
+        if (block.fieldId === "html") return <div class="faq-custom-html" set:html={block.html || ""} />;
+        if (block.fieldId === "affiliate_product") return <section class="not-prose my-8 flex flex-col gap-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center">
+          {block.image?.url && <img src={block.image.url} alt={block.title || ""} width={block.image.width} height={block.image.height} loading="lazy" class="mx-auto max-h-56 w-full max-w-56 rounded-lg object-contain sm:mx-0" />}
+          <div class="min-w-0 flex-1">
+            {block.title && <h2 class="mb-2 text-lg font-bold text-slate-900">{block.title}</h2>}
+            {block.description && <p class="mb-4 whitespace-pre-wrap text-sm leading-relaxed text-slate-700">{block.description}</p>}
+            <div class="flex flex-wrap gap-2">
+              {[
+                ["Amazon", block.amazon_url],
+                ["楽天市場", block.rakuten_url],
+                ["Yahoo!ショッピング", block.yahoo_url],
+              ].map(([label, href]) => safeLink(href) && <a href={safeLink(href)} target="_blank" rel="sponsored nofollow noopener noreferrer" class="inline-flex rounded-lg bg-amber-500 px-4 py-2 text-sm font-bold text-white no-underline hover:bg-amber-600">{label}</a>)}
+            </div>
+          </div>
+        </section>;
+        if (block.fieldId === "affiliate_cta") return <div class="not-prose my-8 text-center">
+          {block.micro_copy && <p class="mb-2 text-sm font-semibold text-slate-600">{block.micro_copy}</p>}
+          {safeLink(block.url) && <a href={safeLink(block.url)} target="_blank" rel="sponsored nofollow noopener noreferrer" style={`background-color: ${getCtaButtonColor(block.style)}`} class="inline-flex rounded-xl px-6 py-3 font-bold text-white no-underline shadow-sm transition hover:brightness-90">{block.label || "詳しくはこちら"}</a>}
+          {block.style?.length ? <p class="mt-2 text-xs text-slate-500">{block.style.join("・")}</p> : null}
+        </div>;
+        if (block.fieldId === "affiliate_banner") return safeLink(block.url) && block.banner_image?.url ? <a href={safeLink(block.url)} target="_blank" rel="sponsored nofollow noopener noreferrer" class="not-prose my-8 block overflow-hidden rounded-xl no-underline">
+          <img src={block.banner_image.url} alt="" width={block.banner_image.width} height={block.banner_image.height} loading="lazy" class="h-auto w-full" />
+        </a> : null;
+        return null;
+      })}
+    </div>
   </section>
 </article>

@@ -13,18 +13,18 @@ Node.js 24 以上
 ルート直下に`.env`ファイルを作成し、下記の情報を入力してください。
 
 ```
-PUBLIC_MICROCMS_API_KEY=xxxxxxxxxx
-PUBLIC_MICROCMS_SERVICE_DOMAIN=xxxxxxxxxx
+MICROCMS_API_KEY=xxxxxxxxxx
+MICROCMS_SERVICE_DOMAIN=xxxxxxxxxx
 SITE_URL=https://your-domain.example
 ```
 
 画面プレビューURLは `https://your-domain.example/preview/?contentId={CONTENT_ID}&draftKey={DRAFT_KEY}` に設定してください。
 
-`PUBLIC_MICROCMS_API_KEY`  
+`MICROCMS_API_KEY`  
 microCMS 管理画面の「サービス設定 > API キー」から確認することができます。
-このAPIキーはブラウザへ公開されるため、読み取り専用（GETのみ）の権限にしてください。
+プレビューのため、FAQプレビュー時にブラウザへ渡されます。読み取り専用（GETのみ）の権限にしてください。
 
-`PUBLIC_MICROCMS_SERVICE_DOMAIN`
+`MICROCMS_SERVICE_DOMAIN`
 
 microCMS 管理画面の URL（https://xxxxxxxx.microcms.io）の xxxxxxxx の部分です。
 

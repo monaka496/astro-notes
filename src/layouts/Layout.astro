@@ -14,8 +14,17 @@ const resolvedTitle = title || Meta.title;
 const pageTitle = resolvedTitle && resolvedTitle !== siteTitle ? `${resolvedTitle} | ${siteTitle}` : siteTitle;
 const pageDescription = description || Meta.description || siteDescription;
 const canonicalUrl = new URL(Astro.url.pathname, config.siteUrl || "https://faq.monaka496.com/");
+const siteUrl = new URL(config.siteUrl || "https://faq.monaka496.com/");
 const ogImage = image || Meta.image || config.defaultOgpImage?.url;
 const analyticsId = config.analyticsId;
+const websiteStructuredData = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "@id": `${siteUrl.origin}/#website`,
+  url: `${siteUrl.origin}/`,
+  name: "スマホのFAQ",
+  inLanguage: "ja-JP",
+};
 ---
 
 <!doctype html>
@@ -36,7 +45,7 @@ const analyticsId = config.analyticsId;
       rel="stylesheet"
     />
     <!-- OG settings -->
-    <meta property="og:site_name" content={siteTitle} />
+    <meta property="og:site_name" content="スマホのFAQ" />
     <meta property="og:title" content={pageTitle} />
     {ogImage && <meta property="og:image" content={typeof ogImage === "string" ? ogImage : ogImage.toString()} />}
     {ogImage && <meta property="og:image:alt" content={pageTitle} />}
@@ -52,6 +61,7 @@ const analyticsId = config.analyticsId;
     <link rel="canonical" href={canonicalUrl.toString()} />
     <link rel="sitemap" href="/sitemap-index.xml" />
     <link rel="alternate" type="application/rss+xml" title="FAQ RSS" href="/rss.xml" />
+    <script type="application/ld+json" set:html={JSON.stringify(websiteStructuredData)} />
     {analyticsId && (
       <>
         <script async src={`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(analyticsId)}`}></script>
