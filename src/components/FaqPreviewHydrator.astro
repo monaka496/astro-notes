@@ -92,6 +92,7 @@
         const item = JSON.parse(source.slice(objectStart, objectEnd)) as {
           eid?: string;
           n?: string;
+          b?: string;
           v?: string;
           d?: string;
           c_p?: string;
@@ -129,39 +130,42 @@
         }
         const details = document.createElement("div");
         details.className = "min-w-0 flex-1";
+        if (item.b) {
+          const maker = document.createElement("p");
+          maker.className = "mb-1 text-sm text-slate-600";
+          maker.textContent = item.b;
+          details.append(maker);
+        }
         const title = document.createElement("p");
         title.className = "mb-3 font-bold leading-relaxed text-slate-900";
-        title.textContent = item.n || "商品リンク";
+        const primaryButton = item.b_l?.find((button) => button.s_n === item.u?.t);
+        const primaryUrl = primaryButton ? getMoshimoAffiliateUrl(primaryButton, item) : "";
+        if (primaryUrl) {
+          const titleLink = document.createElement("a");
+          titleLink.href = primaryUrl;
+          titleLink.target = "_blank";
+          titleLink.rel = "nofollow sponsored noopener noreferrer";
+          titleLink.referrerPolicy = "no-referrer-when-downgrade";
+          titleLink.textContent = item.n || "商品リンク";
+          title.append(titleLink);
+        } else {
+          title.textContent = item.n || "商品リンク";
+        }
         details.append(title);
         const buttons = document.createElement("div");
         buttons.className = "flex flex-col gap-2 sm:flex-row";
         for (const button of item.b_l || []) {
-          if (!button.u_url || !button.a_id || !button.p_id || !button.pc_id || !button.pl_id) continue;
-          try {
-            let destination = button.u_url;
-            if (item.u?.t === button.s_n && item.u?.u) {
-              destination = item.u.u;
-            } else if (!(Number(item.v) >= 2.1 && button.s_n !== "yahoo")) {
-              destination = encodeURI(decodeURI(destination));
-            }
-            const domainParts = window.location.hostname.split(".");
-            const suffix = domainParts.pop();
-            const service = domainParts.pop();
-            const moshimoDomain = suffix === "msm" ? `${service}.msm` : "moshimo.com";
-            let affiliateUrl = `https://af.${moshimoDomain}/af/c/click?a_id=${button.a_id}&p_id=${button.p_id}&pc_id=${button.pc_id}&pl_id=${button.pl_id}&url=${encodeURIComponent(destination)}`;
-            if (button.s_v) affiliateUrl += `&s_v=${encodeURIComponent(button.s_v)}`;
-            const link = document.createElement("a");
-            link.href = affiliateUrl;
-            link.target = "_blank";
-            link.rel = "nofollow sponsored noopener noreferrer";
-            link.referrerPolicy = "no-referrer-when-downgrade";
-            link.textContent = button.u_tx || "商品を見る";
-            link.className = "inline-flex w-full justify-center rounded-lg px-4 py-2 text-sm font-bold text-white no-underline sm:w-auto sm:flex-1";
-            link.style.backgroundColor = button.u_bc && /^#[0-9a-f]{3,8}$/i.test(button.u_bc) ? button.u_bc : "#475569";
-            buttons.append(link);
-          } catch {
-            // Ignore malformed tracking URLs in preview content.
-          }
+          const affiliateUrl = getMoshimoAffiliateUrl(button, item);
+          if (!affiliateUrl) continue;
+          const link = document.createElement("a");
+          link.href = affiliateUrl;
+          link.target = "_blank";
+          link.rel = "nofollow sponsored noopener noreferrer";
+          link.referrerPolicy = "no-referrer-when-downgrade";
+          link.textContent = button.u_tx || "商品を見る";
+          link.className = "moshimo-preview-button inline-flex w-full justify-center rounded-lg px-4 py-2 text-sm font-bold text-white no-underline sm:w-auto sm:flex-1";
+          link.style.backgroundColor = button.u_bc && /^#[0-9a-f]{3,8}$/i.test(button.u_bc) ? button.u_bc : "#475569";
+          buttons.append(link);
         }
         details.append(buttons);
         card.append(details);
@@ -169,6 +173,30 @@
       } catch (error) {
         console.warn("Could not render the Moshimo affiliate fallback.", error);
       }
+    }
+  };
+
+  const getMoshimoAffiliateUrl = (
+    button: { u_url?: string; a_id?: number; p_id?: number; pc_id?: number; pl_id?: number; s_n?: string; s_v?: string },
+    item: { v?: string; u?: { u?: string; t?: string } },
+  ) => {
+    if (!button.u_url || !button.a_id || !button.p_id || !button.pc_id || !button.pl_id) return "";
+    try {
+      let destination = button.u_url;
+      if (item.u?.t === button.s_n && item.u?.u) {
+        destination = item.u.u;
+      } else if (!(Number(item.v) >= 2.1 && button.s_n !== "yahoo")) {
+        destination = encodeURI(decodeURI(destination));
+      }
+      const domainParts = window.location.hostname.split(".");
+      const suffix = domainParts.pop();
+      const service = domainParts.pop();
+      const moshimoDomain = suffix === "msm" ? `${service}.msm` : "moshimo.com";
+      let affiliateUrl = `https://af.${moshimoDomain}/af/c/click?a_id=${button.a_id}&p_id=${button.p_id}&pc_id=${button.pc_id}&pl_id=${button.pl_id}&url=${encodeURIComponent(destination)}`;
+      if (button.s_v) affiliateUrl += `&s_v=${encodeURIComponent(button.s_v)}`;
+      return affiliateUrl;
+    } catch {
+      return "";
     }
   };
 
