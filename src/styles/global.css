@@ -166,3 +166,28 @@ body {
 .entry-content pre code {
   @apply bg-transparent text-inherit p-0;
 }
+
+/* もしもアフィリエイト EasyLink */
+.entry-content [id^="msmaflink-"] a {
+  color: #fff !important;
+  text-decoration: none !important;
+}
+
+@media (max-width: 639px) {
+  .entry-content [id^="msmaflink-"] .easyLink-info-btn {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+    width: 100% !important;
+  }
+
+  .entry-content [id^="msmaflink-"] .easyLink-info-btn a {
+    box-sizing: border-box !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+  }
+}
