@@ -19,7 +19,10 @@ const related = faqs
       {related.map((faq) => (
         <li class="rounded-xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md">
           <a href={`/faq/${encodeURIComponent(faq.id)}/`} class="group block h-full rounded-xl p-4 text-inherit no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
-            <span class="font-semibold text-blue-800 group-hover:underline">{faq.question || faq.title || "無題の質問"}</span>
+            <span class="flex items-start gap-3 text-base font-bold leading-7 text-slate-900 group-hover:text-blue-800 sm:text-lg">
+              <img src="/icons/qa/q-icon.svg" alt="" aria-hidden="true" width="40" height="40" class="size-10 shrink-0" />
+              <span class="group-hover:underline">{faq.question || faq.title || "無題の質問"}</span>
+            </span>
             {faq.description && <span class="mt-1 block text-sm leading-6 text-slate-600">{faq.description}</span>}
           </a>
         </li>

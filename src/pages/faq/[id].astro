@@ -31,7 +31,7 @@ const titleText = faq.question || faq.title || "FAQ詳細";
 const siteUrl = Astro.site ?? new URL("https://example.com");
 const faqUrl = new URL(`/faq/${faq.id}/`, siteUrl).toString();
 const breadcrumbItems = [
-  { label: "FAQトップ", href: new URL("/", siteUrl).toString() },
+  { label: "FAQトップ", href: "/" },
   { label: titleText },
 ];
 const structuredData = {
@@ -54,7 +54,7 @@ const structuredData = {
         "@type": "ListItem",
         position: index + 1,
         name: item.label,
-        item: item.href || faqUrl,
+        item: index === 0 ? new URL("/", siteUrl).toString() : faqUrl,
       })),
     },
   ],

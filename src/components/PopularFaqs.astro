@@ -14,14 +14,18 @@ const items = faqs.map((faq) => ({ id: faq.id, title: faq.question || faq.title 
   ranked.forEach((item) => {
     const li = document.createElement("li");
     const a = document.createElement("a");
-    const badge = document.createElement("span");
+    const badge = document.createElement("img");
     const title = document.createElement("span");
     a.href = `/faq/${encodeURIComponent(item.id)}/`;
     title.textContent = item.title;
     li.className = "rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md";
     a.className = "flex items-start gap-3 text-sm font-semibold leading-6 text-slate-800 no-underline hover:text-blue-800";
-    badge.className = "inline-flex size-7 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-800";
-    badge.textContent = "Q.";
+    badge.src = "/icons/qa/q-icon.svg";
+    badge.alt = "";
+    badge.setAttribute("aria-hidden", "true");
+    badge.width = 40;
+    badge.height = 40;
+    badge.className = "size-10 shrink-0";
     title.className = "pt-0.5 hover:underline";
     a.append(badge, title);
     li.append(a);

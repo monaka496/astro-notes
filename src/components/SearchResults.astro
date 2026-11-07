@@ -68,11 +68,15 @@ const searchData = faqs.map((faq) => ({
       link.href = `/faq/${encodeURIComponent(item.id)}/`;
       link.className = "group block text-inherit no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600";
       const title = document.createElement("span");
-      const questionBadge = document.createElement("span");
+      const questionBadge = document.createElement("img");
       const questionText = document.createElement("span");
       title.className = "flex items-start gap-3 font-bold leading-7 text-slate-900 group-hover:text-blue-800";
-      questionBadge.className = "inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-800";
-      questionBadge.textContent = "Q.";
+      questionBadge.src = "/icons/qa/q-icon.svg";
+      questionBadge.alt = "";
+      questionBadge.setAttribute("aria-hidden", "true");
+      questionBadge.width = 40;
+      questionBadge.height = 40;
+      questionBadge.className = "size-10 shrink-0";
       questionText.className = "group-hover:underline";
       questionText.textContent = item.question;
       title.append(questionBadge, questionText);
@@ -81,10 +85,14 @@ const searchData = faqs.map((faq) => ({
       if (excerpt) {
         const p = document.createElement("p");
         p.className = "mt-3 flex items-start gap-3 text-sm leading-6 text-slate-600";
-        const answerBadge = document.createElement("span");
+        const answerBadge = document.createElement("img");
         const answerText = document.createElement("span");
-        answerBadge.className = "inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-800";
-        answerBadge.textContent = "A.";
+        answerBadge.src = "/icons/qa/a-icon.svg";
+        answerBadge.alt = "";
+        answerBadge.setAttribute("aria-hidden", "true");
+        answerBadge.width = 40;
+        answerBadge.height = 40;
+        answerBadge.className = "size-10 shrink-0";
         answerText.textContent = excerpt;
         p.append(answerBadge, answerText);
         link.append(p);
