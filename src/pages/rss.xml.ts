@@ -1,13 +1,13 @@
 import rss from "@astrojs/rss";
 import type { APIRoute } from "astro";
-import { getAllFaqs } from "@libs/microcms";
+import { getAllFaqs, getSiteConfig } from "@libs/microcms";
 import { getFaqContentHtml, getFaqContentText } from "@libs/faq-content";
 
 const escapeHtml = (value: string) =>
   value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 
 export const GET: APIRoute = async ({ site }) => {
-  const faqs = await getAllFaqs();
+  const [faqs, config] = await Promise.all([getAllFaqs(), getSiteConfig()]);
   const items = faqs
     .sort((a, b) => new Date(b.publishedAt || b.createdAt).getTime() - new Date(a.publishedAt || a.createdAt).getTime())
     .map((faq) => {
@@ -33,11 +33,11 @@ export const GET: APIRoute = async ({ site }) => {
     });
 
   return rss({
-    title: "FAQサイト",
-    description: "よくある質問と回答を検索できます。",
+    title: config.title,
+    description: config.description,
     site: site ?? new URL("http://localhost:4321"),
     items,
-    trailingSlash: false,
+    trailingSlash: true,
     customData: "<language>ja</language>",
   });
 };

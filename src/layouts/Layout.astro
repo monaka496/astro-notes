@@ -61,7 +61,7 @@ const websiteStructuredData = {
     {ogImageUrl && <meta name="twitter:image" content={ogImageUrl} />}
     <link rel="canonical" href={canonicalUrl.toString()} />
     <link rel="sitemap" href="/sitemap-index.xml" />
-    <link rel="alternate" type="application/rss+xml" title="FAQ RSS" href="/rss.xml" />
+    <link rel="alternate" type="application/rss+xml" title={siteTitle} href="/rss.xml" />
     <script type="application/ld+json" set:html={JSON.stringify(websiteStructuredData)} />
     {analyticsId && (
       <>
