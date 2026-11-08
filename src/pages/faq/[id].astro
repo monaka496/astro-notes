@@ -7,7 +7,6 @@ import SocialShare from "@components/SocialShare.astro";
 import FaqSearch from "@components/FaqSearch.astro";
 import FaqPreviewHydrator from "@components/FaqPreviewHydrator.astro";
 import { getAllFaqs, type Faq } from "@libs/microcms";
-import { getFaqContentText } from "@libs/faq-content";
 
 interface Props {
   faq: Faq;
@@ -44,7 +43,7 @@ const structuredData = {
         name: titleText,
         acceptedAnswer: {
           "@type": "Answer",
-          text: [faq.answer, getFaqContentText(faq.content)].filter(Boolean).join(" ").trim(),
+          text: faq.answer?.trim() || "",
         },
       },
     },
@@ -94,9 +93,3 @@ const structuredData = {
   </main>
 </Layout>
 <FaqPreviewHydrator />
-<script define:vars={{ faqId: faq.id }}>
-  const key = "faq-views";
-  const views = JSON.parse(localStorage.getItem(key) || "{}");
-  views[faqId] = (views[faqId] || 0) + 1;
-  localStorage.setItem(key, JSON.stringify(views));
-</script>

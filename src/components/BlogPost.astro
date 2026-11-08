@@ -8,6 +8,7 @@ import {
 import type { Blog, Faq, FaqContentBlock } from "@libs/microcms";
 import { getFaqContentBlocks } from "@libs/faq-content";
 import { getCtaButtonColor } from "@libs/affiliate";
+import FaqMetrics from "@components/FaqMetrics.astro";
 
 interface Props {
   blog?: Blog;
@@ -60,6 +61,7 @@ const questionText = data.question || data.title || (previewMode ? "下書きプ
       <img src="/icons/qa/a-icon.svg" alt="" aria-hidden="true" width="40" height="40" class="size-10 shrink-0" />
       <p data-faq-answer class="mb-4 min-w-0 flex-1 font-semibold leading-relaxed text-slate-800">{answerText}</p>
     </div>
+    {faq?.id && <FaqMetrics articleId={faq.id} variant="count" />}
     <div data-faq-body class="entry-content prose prose-lg mt-0 max-w-none">
       {renderedBlocks.map(({ block, richHtml }) => {
         if (block.fieldId === "richeditor") return <div class="faq-rich-content" set:html={richHtml || ""} />;
@@ -89,5 +91,6 @@ const questionText = data.question || data.title || (previewMode ? "下書きプ
         return null;
       })}
     </div>
+    {faq?.id && <FaqMetrics articleId={faq.id} variant="button" />}
   </section>
 </article>

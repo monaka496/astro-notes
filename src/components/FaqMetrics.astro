@@ -1,0 +1,106 @@
+---
+interface Props {
+  articleId: string;
+  variant: "count" | "button";
+}
+
+const { articleId, variant } = Astro.props;
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || "";
+const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || "";
+---
+
+{variant === "count" ? (
+  <div
+    data-faq-metrics
+    data-metrics-variant="count"
+    data-article-id={articleId}
+    data-supabase-url={supabaseUrl}
+    data-supabase-key={supabaseKey}
+    class="mb-4 flex justify-end"
+  >
+    <div class="inline-flex items-center gap-2 py-1 text-xs leading-5 text-slate-600" aria-label="この記事を解決した人の数">
+      <img src="/icons/qa/upvote.svg" alt="" aria-hidden="true" width="20" height="20" class="size-5 shrink-0" />
+      <span data-helpful-count aria-live="polite">…人が解決しました</span>
+    </div>
+  </div>
+) : (
+  <div
+    data-faq-metrics
+    data-metrics-variant="button"
+    data-article-id={articleId}
+    data-supabase-url={supabaseUrl}
+    data-supabase-key={supabaseKey}
+    class="mt-6 border-t border-slate-200 pt-5 text-center"
+  >
+    <h2 class="mb-3 text-base font-semibold text-slate-800">このFAQは参考になりましたか？</h2>
+    <div class="flex justify-center gap-3">
+      <button type="button" data-feedback="yes" class="w-36 rounded-lg bg-blue-700 px-5 py-2 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
+        はい
+      </button>
+      <button type="button" data-feedback="no" class="w-36 rounded-lg bg-slate-100 px-5 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-60">
+        いいえ
+      </button>
+    </div>
+    <p data-metrics-message class="mt-3 text-sm text-slate-600" aria-live="polite"></p>
+  </div>
+)}
+
+<script>
+  const metricSections = document.querySelectorAll<HTMLElement>("[data-faq-metrics]");
+  const countSection = [...metricSections].find((section) => section.dataset.metricsVariant === "count");
+  const buttonSection = [...metricSections].find((section) => section.dataset.metricsVariant === "button");
+
+  if (countSection && buttonSection) {
+    const articleId = countSection.dataset.articleId || "";
+    const baseUrl = (countSection.dataset.supabaseUrl || "").replace(/\/$/, "");
+    const apiKey = countSection.dataset.supabaseKey || "";
+    const feedbackButtons = [...buttonSection.querySelectorAll<HTMLButtonElement>("[data-feedback]")];
+    const helpfulCount = countSection.querySelector<HTMLElement>("[data-helpful-count]");
+    const message = buttonSection.querySelector<HTMLElement>("[data-metrics-message]");
+    const headers = { apikey: apiKey, "Content-Type": "application/json" };
+
+    if (!baseUrl || !apiKey) {
+      if (helpfulCount) helpfulCount.textContent = "評価数を取得できません";
+      feedbackButtons.forEach((button) => { button.disabled = true; });
+    } else {
+      const loadMetrics = async () => {
+        const query = new URLSearchParams({ select: "helpful_count", article_id: `eq.${articleId}` });
+        const response = await fetch(`${baseUrl}/rest/v1/faq_metrics?${query}`, { headers: { apikey: apiKey } });
+        if (!response.ok) throw new Error("metrics request failed");
+        const rows = await response.json();
+        const metrics = rows[0] || {};
+        if (helpfulCount) helpfulCount.textContent = `${Number(metrics.helpful_count || 0).toLocaleString("ja-JP")}人が解決しました`;
+      };
+      const callRpc = async (name: string) => {
+        const response = await fetch(`${baseUrl}/rest/v1/rpc/${name}`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ target_article_id: articleId }),
+        });
+        if (!response.ok) throw new Error(`${name} request failed`);
+      };
+
+      void (async () => {
+        try {
+          await callRpc("increment_pv");
+          await loadMetrics();
+        } catch {
+          if (message) message.textContent = "閲覧数を記録できませんでした。";
+        }
+      })();
+
+      feedbackButtons.forEach((button) => button.addEventListener("click", async () => {
+        feedbackButtons.forEach((item) => { item.disabled = true; });
+        if (message) message.textContent = "送信中…";
+        try {
+          await callRpc(button.dataset.feedback === "no" ? "increment_unhelpful" : "increment_helpful");
+          if (message) message.textContent = "ご協力ありがとうございました。";
+          if (button.dataset.feedback === "yes") await loadMetrics();
+        } catch {
+          feedbackButtons.forEach((item) => { item.disabled = false; });
+          if (message) message.textContent = "評価を送信できませんでした。もう一度お試しください。";
+        }
+      }));
+    }
+  }
+</script>

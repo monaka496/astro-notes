@@ -2,33 +2,76 @@
 import type { Faq } from "@libs/microcms";
 const { faqs } = Astro.props as { faqs: Faq[] };
 const items = faqs.map((faq) => ({ id: faq.id, title: faq.question || faq.title || "無題の質問" }));
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || "";
+const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || "";
 ---
-<section aria-labelledby="popular-heading">
-  <h2 id="popular-heading" class="text-lg font-bold text-slate-900">人気のご質問</h2>
-  <ol id="popular-faq-list" class="mt-4 grid gap-3 sm:grid-cols-2"></ol>
-</section>
-<script define:vars={{ items }}>
-  const list = document.querySelector("#popular-faq-list");
-  const scores = JSON.parse(localStorage.getItem("faq-views") || "{}");
-  const ranked = [...items].sort((a, b) => (scores[b.id] || 0) - (scores[a.id] || 0)).slice(0, 5);
-  ranked.forEach((item) => {
-    const li = document.createElement("li");
-    const a = document.createElement("a");
-    const badge = document.createElement("img");
-    const title = document.createElement("span");
-    a.href = `/faq/${encodeURIComponent(item.id)}/`;
-    title.textContent = item.title;
-    li.className = "rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md";
-    a.className = "flex items-start gap-3 text-sm font-semibold leading-6 text-slate-800 no-underline hover:text-blue-800";
-    badge.src = "/icons/qa/q-icon.svg";
-    badge.alt = "";
-    badge.setAttribute("aria-hidden", "true");
-    badge.width = 40;
-    badge.height = 40;
-    badge.className = "size-10 shrink-0";
-    title.className = "pt-0.5 hover:underline";
-    a.append(badge, title);
-    li.append(a);
-    list.append(li);
-  });
+<div class="grid gap-8">
+  <section aria-labelledby="views-heading">
+    <h2 id="views-heading" class="text-lg font-bold text-slate-900">人気のご質問</h2>
+    <ol id="popular-faq-list" class="mt-4 grid gap-3 sm:grid-cols-2"></ol>
+  </section>
+  <section aria-labelledby="solved-heading">
+    <h2 id="solved-heading" class="text-lg font-bold text-slate-900">解決数の多いご質問</h2>
+    <ol id="solved-faq-list" class="mt-4 grid gap-3 sm:grid-cols-2"></ol>
+  </section>
+</div>
+<script define:vars={{ items, supabaseUrl, supabaseKey }}>
+  (async () => {
+    const baseUrl = supabaseUrl.replace(/\/$/, "");
+    const metricsById = {};
+    if (baseUrl && supabaseKey && items.length) {
+      try {
+        const ids = items.map((item) => item.id).join(",");
+        const query = new URLSearchParams({ select: "article_id,pv_count,helpful_count", article_id: `in.(${ids})` });
+        const response = await fetch(`${baseUrl}/rest/v1/faq_metrics?${query}`, { headers: { apikey: supabaseKey } });
+        if (!response.ok) throw new Error("metrics request failed");
+        for (const row of await response.json()) metricsById[row.article_id] = row;
+      } catch {
+        // Keep the list usable if metrics cannot be reached.
+      }
+    }
+    const byViews = [...items].sort((a, b) => {
+      const aMetrics = metricsById[a.id] || {};
+      const bMetrics = metricsById[b.id] || {};
+      return (Number(bMetrics.pv_count) || 0) - (Number(aMetrics.pv_count) || 0);
+    }).slice(0, 5);
+    const byHelpful = [...items].sort((a, b) => {
+      const aMetrics = metricsById[a.id] || {};
+      const bMetrics = metricsById[b.id] || {};
+      return (Number(bMetrics.helpful_count) || 0) - (Number(aMetrics.helpful_count) || 0)
+        || (Number(bMetrics.pv_count) || 0) - (Number(aMetrics.pv_count) || 0);
+    }).slice(0, 5);
+
+    const renderRanking = (listId, ranked, metricKey, suffix) => {
+      const list = document.querySelector(listId);
+      ranked.forEach((item) => {
+      const li = document.createElement("li");
+      const a = document.createElement("a");
+      const badge = document.createElement("img");
+      const title = document.createElement("span");
+      a.href = `/faq/${encodeURIComponent(item.id)}/`;
+      title.textContent = item.title;
+      li.className = "rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md";
+      a.className = "flex items-start gap-3 text-sm font-semibold leading-6 text-slate-800 no-underline hover:text-blue-800";
+      badge.src = "/icons/qa/q-icon.svg";
+      badge.alt = "";
+      badge.setAttribute("aria-hidden", "true");
+      badge.width = 40;
+      badge.height = 40;
+      badge.className = "size-10 shrink-0";
+      title.className = "pt-0.5 hover:underline";
+      if (metricKey) {
+        const score = document.createElement("span");
+        score.textContent = `${Number(metricsById[item.id]?.[metricKey] || 0).toLocaleString("ja-JP")} ${suffix}`;
+        score.className = "mt-1 block text-xs font-normal text-slate-500";
+        title.append(score);
+      }
+      a.append(badge, title);
+      li.append(a);
+      list.append(li);
+      });
+    };
+    renderRanking("#popular-faq-list", byViews, null, "");
+    renderRanking("#solved-faq-list", byHelpful, "helpful_count", "人が解決");
+  })();
 </script>
