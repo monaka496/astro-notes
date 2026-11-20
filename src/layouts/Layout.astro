@@ -6,7 +6,7 @@ import { getSiteConfig } from "@libs/microcms";
 import "@styles/global.css";
 
 const config = await getSiteConfig();
-const siteTitle = config.title;
+const siteTitle = "スマホのFAQ";
 const siteDescription = config.description;
 const { Meta = {}, title, description, image, ogImage, ogType = "website", structuredData, robots = "index,follow,max-image-preview:large" } = Astro.props;
 

@@ -37,7 +37,17 @@ const structuredData = {
   "@context": "https://schema.org",
   "@graph": [
     {
+      "@type": "WebPage",
+      "@id": `${faqUrl}#webpage`,
+      url: faqUrl,
+      name: `${titleText} | スマホのFAQ`,
+      isPartOf: { "@id": `${siteUrl.origin}/#website` },
+      breadcrumb: { "@id": `${faqUrl}#breadcrumb` },
+    },
+    {
       "@type": "FAQPage",
+      "@id": `${faqUrl}#faqpage`,
+      isPartOf: { "@id": `${siteUrl.origin}/#website` },
       mainEntity: {
         "@type": "Question",
         name: titleText,
@@ -49,10 +59,11 @@ const structuredData = {
     },
     {
       "@type": "BreadcrumbList",
+      "@id": `${faqUrl}#breadcrumb`,
       itemListElement: breadcrumbItems.map((item, index) => ({
         "@type": "ListItem",
         position: index + 1,
-        name: item.label,
+        name: index === 0 ? "スマホのFAQ" : item.label,
         item: index === 0 ? new URL("/", siteUrl).toString() : faqUrl,
       })),
     },
