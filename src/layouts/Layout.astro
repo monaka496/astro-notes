@@ -8,15 +8,15 @@ import "@styles/global.css";
 const config = await getSiteConfig();
 const siteTitle = config.title;
 const siteDescription = config.description;
-const { Meta = {}, title, description, image, ogType = "website", structuredData, robots = "index,follow,max-image-preview:large" } = Astro.props;
+const { Meta = {}, title, description, image, ogImage, ogType = "website", structuredData, robots = "index,follow,max-image-preview:large" } = Astro.props;
 
 const resolvedTitle = title || Meta.title;
 const pageTitle = resolvedTitle && resolvedTitle !== siteTitle ? `${resolvedTitle} | ${siteTitle}` : siteTitle;
 const pageDescription = description || Meta.description || siteDescription;
 const canonicalUrl = new URL(Astro.url.pathname, config.siteUrl || "https://faq.monaka496.com/");
 const siteUrl = new URL(config.siteUrl || "https://faq.monaka496.com/");
-const ogImage = image || Meta.image || "/ogp.webp";
-const ogImageUrl = ogImage ? new URL(typeof ogImage === "string" ? ogImage : ogImage.toString(), siteUrl).toString() : undefined;
+const resolvedOgImage = ogImage || image || Meta.image || "/ogp.webp";
+const ogImageUrl = new URL(typeof resolvedOgImage === "string" ? resolvedOgImage : resolvedOgImage.toString(), Astro.site || "https://faq.monaka496.com").toString();
 const analyticsId = config.analyticsId;
 const websiteStructuredData = {
   "@context": "https://schema.org",

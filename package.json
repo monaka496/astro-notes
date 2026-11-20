@@ -21,6 +21,8 @@
     "dayjs": "^1.11.13",
     "microcms-js-sdk": "^3.2.0",
     "microcms-rich-editor-handler": "^1.0.1",
+    "satori": "^0.63.2",
+    "sharp": "^0.35.5",
     "shiki": "^1.29.2",
     "tailwindcss": "^4.2.2"
   },
