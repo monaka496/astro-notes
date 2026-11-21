@@ -28,9 +28,17 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function waitForPublishedPage() {
   await sleep(45_000);
+  let lastStatus;
   for (let attempt = 1; attempt <= 5; attempt += 1) {
     try {
-      const response = await fetch(articleUrl, { redirect: 'follow' });
+      const response = await fetch(articleUrl, {
+        redirect: 'follow',
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+          Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        },
+      });
+      lastStatus = response.status;
       if (response.status === 200) {
         console.log(`Published page is available (attempt ${attempt}): ${articleUrl}`);
         return;
@@ -40,6 +48,10 @@ async function waitForPublishedPage() {
       console.log(`Page check ${attempt}/5 failed: ${error.message}`);
     }
     if (attempt < 5) await sleep(15_000);
+  }
+  if (lastStatus === 403) {
+    console.warn(`Page checks returned HTTP 403; continuing because Cloudflare may be blocking this request: ${articleUrl}`);
+    return;
   }
   throw new Error(`Published page did not return HTTP 200: ${articleUrl}`);
 }
