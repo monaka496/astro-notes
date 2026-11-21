@@ -28,8 +28,16 @@ async function getArticleData() {
     ? article.answer.replace(/<[^>]*>/g, ' ').replace(/(?:&nbsp;|\s)+/gi, ' ').trim()
     : '';
   const description = plainAnswer.slice(0, 100) || 'スマホの疑問やトラブルをわかりやすく解決するFAQサイト';
-  const categoryValue = article.category?.name ?? article.category?.[0]?.name ?? process.env.CATEGORY?.trim() ?? '';
+  const categoryField = Array.isArray(article.category) ? article.category[0] : article.category;
+  const categoryValue = typeof categoryField === 'string'
+    ? categoryField
+    : categoryField?.name ?? categoryField?.title ?? process.env.CATEGORY?.trim() ?? '';
   return { title, description, category: categoryValue };
+}
+
+function formatHashtag(categoryName) {
+  const normalized = String(categoryName ?? '').trim().replace(/[\s\u3000/・]+/g, '_');
+  return normalized ? `#${normalized}` : '#スマホのFAQ';
 }
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -140,9 +148,10 @@ async function postBluesky(text, ogBuffer, { title, description }) {
 
 const article = await getArticleData();
 const { title, description, category } = article;
+const hashtag = formatHashtag(category);
 const ogBuffer = await generateOgImageBuffer(title, category);
 await waitForPublishedPage();
-const postText = `${title}\n${articleUrl}`;
+const postText = `${title}\n${hashtag}\n${articleUrl}`;
 const results = await Promise.allSettled([
   ['Mastodon', () => postMastodon(postText, ogBuffer, title)],
   ['Bluesky', () => postBluesky(postText, ogBuffer, article)],
