@@ -1,0 +1,7 @@
+<script>
+  import { showMoshimoFallback } from "@utils/moshimoAffiliateFallback";
+
+  const article = document.querySelector<HTMLElement>("[data-faq-detail]");
+  const body = article?.querySelector<HTMLElement>("[data-faq-body]");
+  if (body) window.setTimeout(() => showMoshimoFallback(body), 2000);
+</script>
