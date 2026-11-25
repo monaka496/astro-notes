@@ -167,6 +167,13 @@ export type TagResponse = {
   contents: Tag[];
 };
 
+export type CategoryResponse = {
+  totalCount: number;
+  offset: number;
+  limit: number;
+  contents: Category[];
+};
+
 export const getTags = async (queries?: MicroCMSQueries): Promise<TagResponse> => {
   requireMicrocmsConfig();
   return await client.get<TagResponse>({ endpoint: "tag", queries });
@@ -175,10 +182,23 @@ export const getTags = async (queries?: MicroCMSQueries): Promise<TagResponse> =
 // カテゴリ一覧の取得
 export const getCategories = async (queries?: MicroCMSQueries) => {
   requireMicrocmsConfig();
-  return await client.get<{ contents: Category[] }>({
+  return await client.get<CategoryResponse>({
     endpoint: "categories",
     queries,
   });
+};
+
+export const getAllCategories = async (): Promise<Category[]> => {
+  const contents: Category[] = [];
+  let offset = 0;
+  const limit = 100;
+  while (true) {
+    const response = await getCategories({ limit, offset });
+    contents.push(...response.contents);
+    offset += response.contents.length;
+    if (offset >= response.totalCount || response.contents.length === 0) break;
+  }
+  return contents;
 };
 
 export type SiteConfig = {
