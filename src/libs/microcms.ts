@@ -115,18 +115,24 @@ export const getFaqs = async (queries?: MicroCMSQueries): Promise<FaqResponse> =
   };
 };
 
-// Fetch all FAQ records for static search, related links, and ranking display.
-export const getAllFaqs = async (): Promise<Faq[]> => {
-  const contents: Faq[] = [];
-  let offset = 0;
-  const limit = 100;
-  while (true) {
-    const response = await getFaqs({ limit, offset });
-    contents.push(...response.contents);
-    offset += response.contents.length;
-    if (offset >= response.totalCount || response.contents.length === 0) break;
+// Reuse the complete FAQ list across static routes so one build only fetches it once.
+let allFaqsPromise: Promise<Faq[]> | undefined;
+export const getAllFaqs = (): Promise<Faq[]> => {
+  if (!allFaqsPromise) {
+    allFaqsPromise = (async () => {
+      const contents: Faq[] = [];
+      let offset = 0;
+      const limit = 100;
+      while (true) {
+        const response = await getFaqs({ limit, offset });
+        contents.push(...response.contents);
+        offset += response.contents.length;
+        if (offset >= response.totalCount || response.contents.length === 0) break;
+      }
+      return contents;
+    })();
   }
-  return contents;
+  return allFaqsPromise;
 };
 
 // ブログ一覧取得（endpoint が "blogs" や "blog" の場合）

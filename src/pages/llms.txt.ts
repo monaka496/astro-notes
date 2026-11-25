@@ -48,7 +48,7 @@ export const GET: APIRoute = async ({ site }) => {
     for (const faq of categoryFaqs) {
       const title = faq.question || faq.title || "質問";
       const summary = summarizeAnswer(faq.answer);
-      lines.push(`- [${title}](${new URL(`/faq/${faq.id}/`, siteUrl).href}): ${summary}`);
+      lines.push(`- [${title}](${new URL(`/faq/${faq.id}/`, siteUrl).href}): ${summary} ([Markdown](${new URL(`/faq/${faq.id}.md`, siteUrl).href}))`);
     }
   }
 
@@ -57,7 +57,7 @@ export const GET: APIRoute = async ({ site }) => {
     for (const faq of uncategorized) {
       const title = faq.question || faq.title || "質問";
       const summary = summarizeAnswer(faq.answer);
-      lines.push(`- [${title}](${new URL(`/faq/${faq.id}/`, siteUrl).href}): ${summary}`);
+      lines.push(`- [${title}](${new URL(`/faq/${faq.id}/`, siteUrl).href}): ${summary} ([Markdown](${new URL(`/faq/${faq.id}.md`, siteUrl).href}))`);
     }
   }
 

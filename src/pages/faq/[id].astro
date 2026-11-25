@@ -103,7 +103,7 @@ const structuredData = {
 };
 ---
 
-<Layout title={titleText} description={faq.description || `${titleText} よくある質問の回答です。`} ogImage={`/og/${faq.id}.png`} ogType="article" structuredData={structuredData}>
+<Layout title={titleText} description={faq.description || `${titleText} よくある質問の回答です。`} ogImage={`/og/${faq.id}.png`} ogType="article" structuredData={structuredData} markdownUrl={`/faq/${faq.id}.md`}>
   <main data-faq-detail-page class="mx-auto w-full max-w-5xl">
     <Breadcrumb items={breadcrumbItems} />
     <BlogPost faq={faq} />
